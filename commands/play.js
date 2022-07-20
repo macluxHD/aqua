@@ -5,13 +5,26 @@ const ytdl = require('discord-ytdl-core');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('play')
-        .setDescription('Play indicated song!'),
+        .setDescription('Play indicated song!')
+        .addStringOption(option =>
+            option.setName('link')
+                .setDescription('Youtube Link of the song you want to play')
+                .setRequired(true)),
     async execute(interaction) {
+
+        // check if the link is a youtube link
+        const regex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
+        const link = interaction.options.getString('link');
+
+        if (!regex.test(link)) {
+            await interaction.reply('Invalid link!');
+            return;
+        }
 
         // TODO: Get data / update embed etc..
 
         const player = createAudioPlayer();
-        const resource = createAudioResource(ytdl('https://www.youtube.com/watch?v=Lok8xSsn9jw', { filter: 'audioonly', opusEncoded: true }), { inlineVolume: true });
+        const resource = createAudioResource(ytdl(link, { filter: 'audioonly', opusEncoded: true }), { inlineVolume: true });
         resource.volume.setVolume(0.3);
 
         player.play(resource);
