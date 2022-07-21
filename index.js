@@ -34,6 +34,15 @@ const db = new croxy({
     'readable': true,
 });
 
+const defaultServerData = {
+    music: {
+        queue: [],
+    },
+    conf: {
+        prefix: '!',
+    },
+};
+
 // Generate global config if it doesn't exist
 if (!db.has('config')) {
     db.set('config', {
@@ -51,14 +60,7 @@ client.on('messageCreate', message => {
     const guildId = message.guild.id;
 
     if (!db.has(`server.${guildId}`)) {
-        db.set(`server.${guildId}`, {
-            music: {
-                queue: [],
-            },
-            conf: {
-                prefix: '!',
-            },
-        });
+        db.set(`server.${guildId}`, defaultServerData);
     }
 
     const prefix = db.get(`server.${guildId}.conf.prefix`);
@@ -79,14 +81,7 @@ client.on('interactionCreate', async interaction => {
     const guildId = interaction.guildId;
 
     if (!db.has(`server.${guildId}`)) {
-        db.set(`server.${guildId}`, {
-            music: {
-                queue: [],
-            },
-            conf: {
-                prefix: '!',
-            },
-        });
+        db.set(`server.${guildId}`, defaultServerData);
     }
 
     try {
