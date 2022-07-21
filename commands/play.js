@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { createAudioPlayer, createAudioResource, joinVoiceChannel } = require('@discordjs/voice');
 const superagent = require('superagent');
 const play = require('play-dl');
+const utils = require('../utils');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,35 +11,41 @@ module.exports = {
         .addStringOption(option =>
             option.setName('link')
                 .setDescription('Youtube Link of the song you want to play')
-                .setRequired(true)),
-    async execute(interaction, db) {
-        const guildId = interaction.guildId;
+                .setRequired(false)),
+    async execute(interaction, db, message, args) {
+        const guildId = interaction === null ? message.guildId : interaction.guildId;
+        const link = interaction === null ? args[1] : interaction.options.getString('link');
 
-        // check if the link is a youtube link
-        const regex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
-        const link = interaction.options.getString('link');
+        if (link) {
+            // check if the link is a youtube link
+            const regex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
 
-        if (!regex.test(link)) {
-            await interaction.reply('Invalid link!');
+            if (!regex.test(link)) {
+                utils.reply(interaction, message.channel, 'Invalid link!');
+                return;
+            }
+            let ampersand_pos = '';
+
+            let playlistId = link.split('list=')[1];
+            if (typeof playlistId !== 'undefined') {
+                ampersand_pos = playlistId.indexOf('&');
+                if (ampersand_pos != -1) {
+                    playlistId = playlistId.substring(0, ampersand_pos);
+                }
+            }
+
+            let videoId = link.split('v=')[1];
+            ampersand_pos = videoId.indexOf('&');
+            if (ampersand_pos != -1) {
+                videoId = videoId.substring(0, ampersand_pos);
+            }
+
+            await addToQueue(guildId, videoId, playlistId, db);
+        }
+        else if (db.get(`server.${guildId}.music.queue`).length === 0) {
+            utils.reply(interaction, message.channel,'There is no song in the queue!');
             return;
         }
-        let ampersand_pos = '';
-
-        let playlistId = link.split('list=')[1];
-        if (typeof playlistId !== 'undefined') {
-            ampersand_pos = playlistId.indexOf('&');
-            if (ampersand_pos != -1) {
-                playlistId = playlistId.substring(0, ampersand_pos);
-            }
-        }
-
-        let videoId = link.split('v=')[1];
-        ampersand_pos = videoId.indexOf('&');
-        if (ampersand_pos != -1) {
-            videoId = videoId.substring(0, ampersand_pos);
-        }
-
-        await addToQueue(guildId, videoId, playlistId, db);
 
         const player = createAudioPlayer();
 
@@ -57,9 +64,9 @@ module.exports = {
         });
 
         // join voice channel
-        const voiceChannel = interaction.member.voice.channel;
+        const voiceChannel = interaction === null ? message.member.voice.channel : interaction.member.voice.channel;
         if (!voiceChannel) {
-            await interaction.reply('You need to be in a voice channel to use this command!');
+            await utils.reply(interaction, message.channel, 'You need to be in a voice channel to use this command!');
             return;
         }
         const connection = joinVoiceChannel({
@@ -68,7 +75,7 @@ module.exports = {
             adapterCreator: voiceChannel.guild.voiceAdapterCreator,
         });
         connection.subscribe(player);
-        await interaction.reply('Playing!');
+        utils.reply(interaction, message.channel, 'Playing ' + db.get(`server.${guildId}.music.queue`)[0].title);
     },
 };
 
@@ -105,7 +112,6 @@ const addToQueue = (guildId, videoId, playlistId, db) => {
                     resolve();
                     return;
                 });
-
         }
         else if (videoId) {
             db.push(`server.${guildId}.music.queue`, await fetchVideoInfo(videoId));
@@ -148,7 +154,6 @@ const fetchThumbnail = (thumbnails) => {
 
 const playSong = async (player, videoId) => {
     try {
-        // const resource = createAudioResource(ytdl('https://www.youtube.com/watch?v=' + videoId, { filter: 'audioonly', opusEncoded: true, highWaterMark: 1 << 62, bitrate: 128 }), { inlineVolume: true });
         const { stream } = await play.stream('https://www.youtube.com/watch?v=' + videoId, { discordPlayerCompatibility: true });
         const resource = createAudioResource(stream, { inlineVolume: true });
         resource.volume.setVolume(0.3);

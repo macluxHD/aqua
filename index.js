@@ -11,7 +11,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 // Create a new client instance
-const client = new Client({ intents: ['Guilds', 'GuildVoiceStates'] });
+const client = new Client({ intents: ['Guilds', 'GuildVoiceStates', 'GuildMessages', 'MessageContent'] });
 
 // Create a new collection to hold the commands
 client.commands = new Collection();
@@ -46,6 +46,30 @@ client.once('ready', () => {
     console.log('Ready!');
 });
 
+client.on('messageCreate', message => {
+    if (message.author.bot) return;
+    const guildId = message.guild.id;
+
+    if (!db.has(`server.${guildId}`)) {
+        db.set(`server.${guildId}`, {
+            music: {
+                queue: [],
+            },
+            conf: {
+                prefix: '!',
+            },
+        });
+    }
+
+    const prefix = db.get(`server.${guildId}.conf.prefix`);
+
+    if (!message.content.startsWith(prefix)) return;
+    const args = message.content.slice(prefix.length).split(/ +/);
+
+    const command = client.commands.get(args[0]);
+    command.execute(null, db, message, args);
+});
+
 client.on('interactionCreate', async interaction => {
     if (interaction.commandType !== 1) return;
 
@@ -58,6 +82,9 @@ client.on('interactionCreate', async interaction => {
         db.set(`server.${guildId}`, {
             music: {
                 queue: [],
+            },
+            conf: {
+                prefix: '!',
             },
         });
     }
