@@ -26,6 +26,21 @@ for (const file of commandFiles) {
     client.commands.set(command.data.name, command);
 }
 
+const croxy = require('croxydb');
+
+const db = new croxy({
+    'dbName': 'db',
+    'dbFolder': './database',
+    'readable': true,
+});
+
+// Generate global config if it doesn't exist
+if (!db.has('config')) {
+    db.set('config', {
+        'maxQueueLength': 50,
+    });
+}
+
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
     console.log('Ready!');
@@ -37,9 +52,18 @@ client.on('interactionCreate', async interaction => {
     const command = client.commands.get(interaction.commandName);
 
     if (!command) return;
+    const guildId = interaction.guildId;
+
+    if (!db.has(`server.${guildId}`)) {
+        db.set(`server.${guildId}`, {
+            music: {
+                queue: [],
+            },
+        });
+    }
 
     try {
-        await command.execute(interaction);
+        await command.execute(interaction, db);
     }
     catch (error) {
         console.error(error);

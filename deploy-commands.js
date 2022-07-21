@@ -27,6 +27,6 @@ rest.put(Routes.applicationCommands(process.env.clientId), { body: [] })
 */
 
 // Add commands
-rest.put(Routes.applicationCommands(process.env.clientId), { body: commands })
+rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands })
     .then(() => console.log('Successfully registered application commands.'))
     .catch(console.error);

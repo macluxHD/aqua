@@ -4,7 +4,7 @@
   "description": "Discord bot",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon node ."
+    "start": "nodemon index.js --ignore storage.json --ignore database/"
   },
   "repository": {
     "type": "git",
@@ -18,13 +18,13 @@
     "@discordjs/opus": "^0.8.0",
     "@discordjs/rest": "^1.0.0",
     "@discordjs/voice": "^0.11.0",
+    "croxydb": "github:macluxHD/croxydb",
     "discord-api-types": "^0.36.2",
-    "discord-ytdl-core": "^5.0.4",
     "discord.js": "^14.0.2",
     "dotenv": "^16.0.1",
-    "simple-json-db": "^2.0.0",
+    "play-dl": "^1.9.5",
     "sodium": "^3.0.2",
-    "ytdl-core": "^4.11.0"
+    "superagent": "^8.0.0"
   },
   "devDependencies": {
     "eslint": "^8.20.0"
