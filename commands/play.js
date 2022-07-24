@@ -17,7 +17,7 @@ module.exports = {
         const link = interaction === null ? args[1] : interaction.options.getString('link');
 
         if (link) {
-            // check if the link is a youtube link
+            // check if the link provided is a youtube link
             const regex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
 
             if (!regex.test(link)) {
@@ -43,7 +43,7 @@ module.exports = {
             await addToQueue(guildId, videoId, playlistId, db);
         }
         else if (db.get(`server.${guildId}.music.queue`).length === 0) {
-            utils.reply(interaction, message.channel,'There is no song in the queue!');
+            utils.reply(interaction, message.channel, 'There is no song in the queue!');
             return;
         }
 
@@ -75,12 +75,12 @@ module.exports = {
             adapterCreator: voiceChannel.guild.voiceAdapterCreator,
         });
         connection.subscribe(player);
-        utils.reply(interaction, message.channel, 'Playing ' + db.get(`server.${guildId}.music.queue`)[0].title);
+        utils.reply(interaction, message?.channel, 'Playing ' + db.get(`server.${guildId}.music.queue`)[0].title);
     },
 };
 
 const addToQueue = (guildId, videoId, playlistId, db) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (resolve) => {
         const queueLength = db.get(`server.${guildId}.music.queue.length`);
         const maxQueueLength = db.get('config.maxQueueLength');
         if (queueLength >= maxQueueLength) {
@@ -121,7 +121,7 @@ const addToQueue = (guildId, videoId, playlistId, db) => {
 };
 
 const fetchVideoInfo = (videoId) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         superagent
             .get('https://www.googleapis.com/youtube/v3/videos')
             .query({ part: 'snippet', id: videoId, key: process.env.YOUTUBE_API_KEY })
