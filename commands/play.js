@@ -56,7 +56,8 @@ module.exports = {
 
             if (oldState.status === 'playing' && newState.status === 'idle') {
                 const queue = db.get(`server.${guildId}.music.queue`);
-                queue.shift();
+                const song = queue.shift();
+                if (db.get(`server.${guildId}.music.loop`)) queue.push(song);
                 db.set(`server.${guildId}.music.queue`, queue);
 
                 if (queue[0]) playSong(player, queue[0].videoId);

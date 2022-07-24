@@ -37,6 +37,7 @@ const db = new croxy({
 const defaultServerData = {
     music: {
         queue: [],
+        loop: false,
     },
     conf: {
         prefix: '!',
