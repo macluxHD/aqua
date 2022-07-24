@@ -59,7 +59,7 @@ module.exports = {
                 queue.shift();
                 db.set(`server.${guildId}.music.queue`, queue);
 
-                playSong(player, queue[0].videoId);
+                if (queue[0]) playSong(player, queue[0].videoId);
             }
         });
 
