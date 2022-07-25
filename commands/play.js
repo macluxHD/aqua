@@ -16,6 +16,8 @@ module.exports = {
         const guild = !interaction ? message.guild : interaction.guild;
         const link = !interaction ? args[1] : interaction.options.getString('link');
 
+        const queueLength = db.get(`server.${guild.id}.music.queue`).length;
+
         if (link) {
             // check if the link provided is a youtube link
             const ytRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
@@ -47,6 +49,18 @@ module.exports = {
             return;
         }
 
+        const newQueueLength = db.get(`server.${guild.id}.music.queue`).length;
+        if (queueLength !== newQueueLength) {
+            utils.reply(interaction, message.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
+        }
+        else if (client.voice.adapters.get(guild.id)) {
+            utils.reply(interaction, message?.channel, 'Already Playing!');
+            return;
+        }
+        else if (!client.voice.adapters.get(guild.id)) {
+            utils.reply(interaction, message?.channel, 'Connecting to voice channel...');
+        }
+
         const player = createAudioPlayer();
 
         playSong(player, db.get(`server.${guild.id}.music.queue`)[0].videoId);
@@ -76,7 +90,6 @@ module.exports = {
             adapterCreator: voiceChannel.guild.voiceAdapterCreator,
         });
         connection.subscribe(player);
-        utils.reply(interaction, message?.channel, 'Playing ' + db.get(`server.${guildId}.music.queue`)[0].title);
     },
 };
 
