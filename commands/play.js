@@ -20,7 +20,8 @@ module.exports = {
 
         if (link) {
             // check if the link provided is a youtube link
-            const ytRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
+            const ytRegex = /(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/;
+            const videoId = link.match(ytRegex)[1];
 
             if (!ytRegex.test(link)) {
                 await utils.reply(interaction, message.channel, 'Invalid link!');
@@ -36,13 +37,12 @@ module.exports = {
                 }
             }
 
-            let videoId = link.split('v=')[1];
-            ampersand_pos = videoId.indexOf('&');
-            if (ampersand_pos != -1) {
-                videoId = videoId.substring(0, ampersand_pos);
-            }
+            const queueRes = await addToQueue(guild.id, videoId, playlistId, db);
 
-            await addToQueue(guild.id, videoId, playlistId, db);
+            if (queueRes === 404) {
+                utils.reply(interaction, message.channel, 'Video not found!');
+                return;
+            }
         }
         else if (db.get(`server.${guild.id}.music.queue`).length === 0) {
             await utils.reply(interaction, message?.channel, 'There is no song in the queue!');
@@ -121,6 +121,10 @@ const addToQueue = (guildId, videoId, playlistId, db) => {
                 .get('https://www.googleapis.com/youtube/v3/playlistItems')
                 .query({ part: 'snippet', playlistId, key: process.env.YOUTUBE_API_KEY, maxResults: maxQueueLength - queueLength + 1 })
                 .end(async (err, res) => {
+                    if (res?.body?.error?.code === 404) {
+                        resolve(404);
+                        return;
+                    }
                     const videoIds = res.body.items.map(item => item.snippet.videoOwnerChannelId);
                     const channelThumbnails = await getChannelThumbnail(videoIds);
 
@@ -132,7 +136,14 @@ const addToQueue = (guildId, videoId, playlistId, db) => {
                 });
         }
         else if (videoId) {
-            db.push(`server.${guildId}.music.queue`, await fetchVideoInfo(videoId));
+            const videoInfo = await fetchVideoInfo(videoId);
+
+            if (videoInfo === 404) {
+                resolve(404);
+                return;
+            }
+
+            db.push(`server.${guildId}.music.queue`, videoInfo);
             resolve();
         }
     });
@@ -144,6 +155,11 @@ const fetchVideoInfo = (videoId) => {
             .get('https://www.googleapis.com/youtube/v3/videos')
             .query({ part: 'snippet', id: videoId, key: process.env.YOUTUBE_API_KEY })
             .end(async (err, res) => {
+                if (res.body.items.length === 0) {
+                    resolve(404);
+                    return;
+                }
+
                 resolve(parseSnippet(res.body.items[0].snippet, videoId, (await getChannelThumbnail([res.body.items[0].snippet.channelId]))[res.body.items[0].snippet.channelId]));
             });
     });
