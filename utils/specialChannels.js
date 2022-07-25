@@ -9,12 +9,12 @@ module.exports = (utils, client, interaction, db, message) => {
 
     let command;
 
-    if (isSlashCommand) command = interaction.command;
+    if (isSlashCommand) command = interaction.commandName;
     else command = message.content.trim().split(/ +/g)[0];
 
     const isMusicChannel = channel.id == db.get(`server.${guild.id}.conf.musicChannel`);
 
-    if (command.startsWith(db.get(`server.${guild.id}.conf.prefix`)) && musicCommands.includes(command) && !isMusicChannel) {
+    if (((!isSlashCommand && command.startsWith(db.get(`server.${guild.id}.conf.prefix`))) || isSlashCommand) && musicCommands.includes(command) && !isMusicChannel) {
         utils.reply(interaction, channel, 'This command cannot be used here!');
         return true;
     }
