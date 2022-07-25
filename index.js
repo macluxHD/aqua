@@ -9,6 +9,7 @@ const { Client, Collection } = require('discord.js');
 
 const fs = require('node:fs');
 const path = require('node:path');
+const utils = require('./utils');
 
 // Create a new client instance
 const client = new Client({ intents: ['Guilds', 'GuildVoiceStates', 'GuildMessages', 'MessageContent'] });
@@ -59,12 +60,12 @@ client.once('ready', () => {
 });
 
 client.on('messageCreate', message => {
-    if (message.author.bot) return;
     const guildId = message.guild.id;
 
     if (!db.has(`server.${guildId}`)) {
         db.set(`server.${guildId}`, defaultServerData);
     }
+    if (utils.specialChannels(utils, client, null, db, message)) return;
 
     const prefix = db.get(`server.${guildId}.conf.prefix`);
 
@@ -88,6 +89,7 @@ client.on('interactionCreate', async interaction => {
         db.set(`server.${guildId}`, defaultServerData);
     }
 
+    if (utils.specialChannels(utils, client, interaction, db)) return;
     try {
         await command.execute(interaction, db);
     }
