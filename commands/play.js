@@ -117,13 +117,6 @@ const addToQueue = (guildId, videoId, playlistId, db) => {
                 return;
             }
 
-            db.push(`server.${guildId}.music.queue`, await fetchVideoInfo(videoId));
-
-            if (maxQueueLength - queueLength + 1 <= 0) {
-                resolve();
-                return;
-            }
-
             superagent
                 .get('https://www.googleapis.com/youtube/v3/playlistItems')
                 .query({ part: 'snippet', playlistId, key: process.env.YOUTUBE_API_KEY, maxResults: maxQueueLength - queueLength + 1 })
