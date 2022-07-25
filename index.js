@@ -74,7 +74,7 @@ client.on('messageCreate', message => {
 
     const command = client.commands.get(args[0]);
 
-    command.execute(null, db, message, args);
+    command.execute(client, null, db, message, args);
 });
 
 client.on('interactionCreate', async interaction => {
@@ -91,7 +91,7 @@ client.on('interactionCreate', async interaction => {
 
     if (utils.specialChannels(utils, client, interaction, db)) return;
     try {
-        await command.execute(interaction, db);
+        await command.execute(client, interaction, db);
     }
     catch (error) {
         console.error(error);

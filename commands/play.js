@@ -12,7 +12,7 @@ module.exports = {
             option.setName('link')
                 .setDescription('Youtube Link of the song you want to play')
                 .setRequired(false)),
-    async execute(interaction, db, message, args) {
+    async execute(client, interaction, db, message, args) {
         const guildId = interaction === null ? message.guildId : interaction.guildId;
         const link = interaction === null ? args[1] : interaction.options.getString('link');
 

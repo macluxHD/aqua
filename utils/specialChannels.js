@@ -27,12 +27,12 @@ module.exports = (utils, client, interaction, db, message) => {
         }
 
         if (ytRegex.test(command)) {
-            client.commands.get('play').execute(null, db, message, ['play', command]);
+            client.commands.get('play').execute(client, interaction, db, message, ['play', command]);
             return true;
         }
 
         if (musicCommands.includes(command)) {
-            client.commands.get(command).execute(null, db, message, message.content.split(/ +/g));
+            client.commands.get(command).execute(client, interaction, db, message, message?.content?.split(/ +/g));
             return true;
         }
     }
