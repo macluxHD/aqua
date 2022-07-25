@@ -120,9 +120,12 @@ const addToQueue = (guildId, videoId, playlistId, db) => {
             superagent
                 .get('https://www.googleapis.com/youtube/v3/playlistItems')
                 .query({ part: 'snippet', playlistId, key: process.env.YOUTUBE_API_KEY, maxResults: maxQueueLength - queueLength + 1 })
-                .end((err, res) => {
+                .end(async (err, res) => {
+                    const videoIds = res.body.items.map(item => item.snippet.videoOwnerChannelId);
+                    const channelThumbnails = await getChannelThumbnail(videoIds);
+
                     for (let i = 0; i < res.body.items.length; i++) {
-                        db.push(`server.${guildId}.music.queue`, parseSnippet(res.body.items[i].snippet));
+                        db.push(`server.${guildId}.music.queue`, parseSnippet(res.body.items[i].snippet, null, channelThumbnails[res.body.items[i].snippet.videoOwnerChannelId]));
                     }
                     resolve();
                     return;
@@ -140,8 +143,8 @@ const fetchVideoInfo = (videoId) => {
         superagent
             .get('https://www.googleapis.com/youtube/v3/videos')
             .query({ part: 'snippet', id: videoId, key: process.env.YOUTUBE_API_KEY })
-            .end((err, res) => {
-                resolve(parseSnippet(res.body.items[0].snippet, videoId));
+            .end(async (err, res) => {
+                resolve(parseSnippet(res.body.items[0].snippet, videoId, (await getChannelThumbnail([res.body.items[0].snippet.channelId]))[res.body.items[0].snippet.channelId]));
             });
     });
 };
@@ -180,11 +183,30 @@ const playSong = async (player, videoId) => {
     }
 };
 
-const parseSnippet = (snippet, videoId) => {
+const parseSnippet = (snippet, videoId, channelThumbnail) => {
     return {
         videoId: !videoId ? snippet.resourceId.videoId : videoId,
         title: snippet.title,
-        author: snippet.videoOwnerChannelTitle,
         thumbnail: fetchThumbnail(snippet.thumbnails).url,
+        author: !snippet.videoOwnerChannelTitle ? snippet.channelTitle : snippet.videoOwnerChannelTitle,
+        channelThumbnail: channelThumbnail,
     };
+};
+
+const getChannelThumbnail = (channelids) => {
+    return new Promise((resolve) => {
+        superagent
+            .get('https://www.googleapis.com/youtube/v3/channels')
+            .query({ part: 'snippet', id: channelids, key: process.env.YOUTUBE_API_KEY })
+            .end((err, res) => {
+                const channels = res.body.items;
+                const thumbnails = {};
+
+                channels.forEach(channel => {
+                    thumbnails[channel.id] = channel.snippet.thumbnails.high.url;
+                });
+
+                resolve(thumbnails);
+            });
+    });
 };

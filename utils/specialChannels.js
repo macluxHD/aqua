@@ -1,7 +1,7 @@
 const musicCommands = ['play'];
 const ytRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
 
-module.exports = (utils, client, interaction, db, message) => {
+module.exports = async (utils, client, interaction, db, message) => {
     const isSlashCommand = interaction !== null;
 
     const guild = isSlashCommand ? interaction.guild : message.guild;

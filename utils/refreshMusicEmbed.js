@@ -14,7 +14,7 @@ module.exports = async (db, guild) => {
         playerEmbed.setTitle(currentVideo.title);
         playerEmbed.setURL('https://www.youtube.com/watch?v=' + currentVideo.videoId);
         playerEmbed.setImage(currentVideo.thumbnail);
-
+        playerEmbed.setFooter({ text: currentVideo.author, iconURL: currentVideo.channelThumbnail });
     }
     else {
         playerEmbed.setTitle('No music playing');
