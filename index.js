@@ -70,6 +70,7 @@ client.on('messageCreate', message => {
     const args = message.content.slice(prefix.length).split(/ +/);
 
     const command = client.commands.get(args[0]);
+
     command.execute(null, db, message, args);
 });
 

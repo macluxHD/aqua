@@ -18,9 +18,9 @@ module.exports = {
 
         if (link) {
             // check if the link provided is a youtube link
-            const regex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
+            const ytRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
 
-            if (!regex.test(link)) {
+            if (!ytRegex.test(link)) {
                 utils.reply(interaction, message.channel, 'Invalid link!');
                 return;
             }
@@ -52,8 +52,6 @@ module.exports = {
         playSong(player, db.get(`server.${guildId}.music.queue`)[0].videoId);
 
         player.on('stateChange', (oldState, newState) => {
-            console.log(`State changed from ${oldState.status} to ${newState.status}`);
-
             if (oldState.status === 'playing' && newState.status === 'idle') {
                 const queue = db.get(`server.${guildId}.music.queue`);
                 const song = queue.shift();
