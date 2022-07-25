@@ -50,6 +50,7 @@ module.exports = {
         const player = createAudioPlayer();
 
         playSong(player, db.get(`server.${guildId}.music.queue`)[0].videoId);
+        utils.refreshMusicEmbed(db, interaction === null ? message.guild : interaction.guild);
 
         player.on('stateChange', (oldState, newState) => {
             if (oldState.status === 'playing' && newState.status === 'idle') {
@@ -59,6 +60,7 @@ module.exports = {
                 db.set(`server.${guildId}.music.queue`, queue);
 
                 if (queue[0]) playSong(player, queue[0].videoId);
+                utils.refreshMusicEmbed(db, interaction === null ? message.guild : interaction.guild);
             }
         });
 

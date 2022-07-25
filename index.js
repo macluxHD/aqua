@@ -38,6 +38,8 @@ const defaultServerData = {
     music: {
         queue: [],
         loop: false,
+        queueEmbedId: null,
+        playerEmbedId: null,
     },
     conf: {
         prefix: '!',
