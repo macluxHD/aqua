@@ -23,7 +23,7 @@ module.exports = {
             const ytRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
 
             if (!ytRegex.test(link)) {
-                utils.reply(interaction, message.channel, 'Invalid link!');
+                await utils.reply(interaction, message.channel, 'Invalid link!');
                 return;
             }
             let ampersand_pos = '';
@@ -45,20 +45,28 @@ module.exports = {
             await addToQueue(guild.id, videoId, playlistId, db);
         }
         else if (db.get(`server.${guild.id}.music.queue`).length === 0) {
-            utils.reply(interaction, message.channel, 'There is no song in the queue!');
+            await utils.reply(interaction, message?.channel, 'There is no song in the queue!');
             return;
         }
 
         const newQueueLength = db.get(`server.${guild.id}.music.queue`).length;
         if (queueLength !== newQueueLength) {
-            utils.reply(interaction, message.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
+            await utils.reply(interaction, message?.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
         }
         else if (client.voice.adapters.get(guild.id)) {
-            utils.reply(interaction, message?.channel, 'Already Playing!');
+            if (link) {
+                if (queueLength === newQueueLength) await utils.reply(interaction, message?.channel, 'Queue already full!');
+                else await utils.reply(interaction, message.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
+            }
+            else {
+                await utils.reply(interaction, message?.channel, 'Already Playing!');
+            }
             return;
         }
         else if (!client.voice.adapters.get(guild.id)) {
-            utils.reply(interaction, message?.channel, 'Connecting to voice channel...');
+            await utils.reply(interaction, message?.channel, 'Connecting to voice channel...');
+
+            if (link && queueLength === newQueueLength) await utils.reply(interaction, message?.channel, 'Queue already full!');
         }
 
         const player = createAudioPlayer();

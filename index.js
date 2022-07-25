@@ -59,7 +59,7 @@ client.once('ready', () => {
     console.log('Ready!');
 });
 
-client.on('messageCreate', message => {
+client.on('messageCreate', async message => {
     const guildId = message.guild.id;
 
     if (!db.has(`server.${guildId}`)) {
@@ -74,7 +74,13 @@ client.on('messageCreate', message => {
 
     const command = client.commands.get(args[0]);
 
-    command.execute(client, null, db, message, args);
+    try {
+        command.execute(client, null, db, message, args);
+    }
+    catch (error) {
+        console.error(error);
+        await utils.reply(null, message.channel, 'An error occurred while executing that command!');
+    }
 });
 
 client.on('interactionCreate', async interaction => {
@@ -95,7 +101,7 @@ client.on('interactionCreate', async interaction => {
     }
     catch (error) {
         console.error(error);
-        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        await interaction.reply({ content: 'An error occurred while executing that command!', ephemeral: true });
     }
 });
 

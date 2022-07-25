@@ -15,24 +15,43 @@ module.exports = (utils, client, interaction, db, message) => {
     const isMusicChannel = channel.id == db.get(`server.${guild.id}.conf.musicChannel`);
 
     if (((!isSlashCommand && command.startsWith(db.get(`server.${guild.id}.conf.prefix`))) || isSlashCommand) && musicCommands.includes(command) && !isMusicChannel) {
-        utils.reply(interaction, channel, 'This command cannot be used here!');
+        await utils.reply(interaction, channel, 'This command cannot be used here!');
         return true;
     }
 
     if (isMusicChannel) {
         if (!isSlashCommand) {
             setTimeout(() => {
-                if (!message.pinned) message.delete();
+                if (!message.pinned) {
+                    try {
+                        message.delete();
+                    }
+                    catch (e) {
+                        // console.log(e);
+                    }
+                }
             }, 5000);
         }
 
         if (ytRegex.test(command)) {
-            client.commands.get('play').execute(client, interaction, db, message, ['play', command]);
+            try {
+                client.commands.get('play').execute(client, interaction, db, message, ['play', command]);
+            }
+            catch (error) {
+                console.error(error);
+                await utils.reply(null, message.channel, 'An error occurred while executing that command!');
+            }
             return true;
         }
 
         if (musicCommands.includes(command)) {
-            client.commands.get(command).execute(client, interaction, db, message, message?.content?.split(/ +/g));
+            try {
+                client.commands.get(command).execute(client, interaction, db, message, message?.content?.split(/ +/g));
+            }
+            catch (error) {
+                console.error(error);
+                await utils.reply(null, message.channel, 'An error occurred while executing that command!');
+            }
             return true;
         }
     }
