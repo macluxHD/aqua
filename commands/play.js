@@ -13,8 +13,8 @@ module.exports = {
                 .setDescription('Youtube Link of the song you want to play')
                 .setRequired(false)),
     async execute(client, interaction, db, message, args) {
-        const guildId = interaction === null ? message.guildId : interaction.guildId;
-        const link = interaction === null ? args[1] : interaction.options.getString('link');
+        const guild = !interaction ? message.guild : interaction.guild;
+        const link = !interaction ? args[1] : interaction.options.getString('link');
 
         if (link) {
             // check if the link provided is a youtube link
@@ -40,24 +40,24 @@ module.exports = {
                 videoId = videoId.substring(0, ampersand_pos);
             }
 
-            await addToQueue(guildId, videoId, playlistId, db);
+            await addToQueue(guild.id, videoId, playlistId, db);
         }
-        else if (db.get(`server.${guildId}.music.queue`).length === 0) {
+        else if (db.get(`server.${guild.id}.music.queue`).length === 0) {
             utils.reply(interaction, message.channel, 'There is no song in the queue!');
             return;
         }
 
         const player = createAudioPlayer();
 
-        playSong(player, db.get(`server.${guildId}.music.queue`)[0].videoId);
+        playSong(player, db.get(`server.${guild.id}.music.queue`)[0].videoId);
         utils.refreshMusicEmbed(db, interaction === null ? message.guild : interaction.guild);
 
         player.on('stateChange', (oldState, newState) => {
             if (oldState.status === 'playing' && newState.status === 'idle') {
-                const queue = db.get(`server.${guildId}.music.queue`);
+                const queue = db.get(`server.${guild.id}.music.queue`);
                 const song = queue.shift();
-                if (db.get(`server.${guildId}.music.loop`)) queue.push(song);
-                db.set(`server.${guildId}.music.queue`, queue);
+                if (db.get(`server.${guild.id}.music.loop`)) queue.push(song);
+                db.set(`server.${guild.id}.music.queue`, queue);
 
                 if (queue[0]) playSong(player, queue[0].videoId);
                 utils.refreshMusicEmbed(db, interaction === null ? message.guild : interaction.guild);
