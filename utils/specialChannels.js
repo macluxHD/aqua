@@ -1,4 +1,4 @@
-const musicCommands = ['play'];
+const musicCommands = ['play', 'page'];
 const ytRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
 
 module.exports = async (utils, client, interaction, db, message) => {
@@ -6,6 +6,7 @@ module.exports = async (utils, client, interaction, db, message) => {
 
     const guild = isSlashCommand ? interaction.guild : message.guild;
     const channel = isSlashCommand ? interaction.channel : message.channel;
+    const prefix = db.get(`server.${guild.id}.conf.prefix`);
 
     let command;
 
@@ -14,7 +15,7 @@ module.exports = async (utils, client, interaction, db, message) => {
 
     const isMusicChannel = channel.id == db.get(`server.${guild.id}.conf.musicChannel`);
 
-    if (((!isSlashCommand && command.startsWith(db.get(`server.${guild.id}.conf.prefix`))) || isSlashCommand) && musicCommands.includes(command) && !isMusicChannel) {
+    if (((!isSlashCommand && command.startsWith(prefix)) || isSlashCommand) && musicCommands.includes(command) && !isMusicChannel) {
         await utils.reply(interaction, channel, 'This command cannot be used here!');
         return true;
     }
@@ -44,7 +45,8 @@ module.exports = async (utils, client, interaction, db, message) => {
             return true;
         }
 
-        if (musicCommands.includes(command)) {
+        if (musicCommands.includes(command) || musicCommands.includes(command.substring(prefix.length))) {
+            if (command.startsWith(prefix)) command = command.substring(prefix.length);
             try {
                 client.commands.get(command).execute(client, interaction, db, message, message?.content?.split(/ +/g));
             }
