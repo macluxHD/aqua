@@ -27,8 +27,17 @@ module.exports = async (db, guild) => {
     }
 
     const queue = music.queue;
-    const queueIndex = music.queueIndex;
+    let queueIndex = music.queueIndex;
     const totalQueuePages = Math.ceil((queue.length - 1) / 5);
+
+    if (queueIndex + 1 > totalQueuePages) {
+        queueIndex = totalQueuePages - 1;
+        db.set(`server.${guildId}.music.queueIndex`, queueIndex);
+    }
+    else if (queueIndex < 0) {
+        queueIndex = 0;
+        db.set(`server.${guildId}.music.queueIndex`, queueIndex);
+    }
 
     const queuePage = queue.splice((queueIndex * 5) + 1, 5);
 
