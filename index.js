@@ -39,6 +39,7 @@ const defaultServerData = {
     music: {
         queue: [],
         loop: false,
+        queueIndex: 0,
         queueEmbedId: null,
         playerEmbedId: null,
     },
