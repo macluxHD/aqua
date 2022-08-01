@@ -83,6 +83,7 @@ module.exports = {
                 db.set(`server.${guild.id}.music.queue`, queue);
 
                 if (queue[0]) playSong(player, guild, db);
+                else utils.refreshMusicEmbed(db, guild);
             }
         });
 
