@@ -71,8 +71,7 @@ module.exports = {
 
         const player = createAudioPlayer();
 
-        playSong(player, db.get(`server.${guild.id}.music.queue`)[0].videoId);
-        utils.refreshMusicEmbed(db, interaction === null ? message.guild : interaction.guild);
+        playSong(player, guild, db);
 
         player.on('stateChange', (oldState, newState) => {
             if (oldState.status === 'playing' && newState.status === 'idle') {
@@ -81,8 +80,7 @@ module.exports = {
                 if (db.get(`server.${guild.id}.music.loop`) && song) queue.push(song);
                 db.set(`server.${guild.id}.music.queue`, queue);
 
-                if (queue[0]) playSong(player, queue[0].videoId);
-                utils.refreshMusicEmbed(db, interaction === null ? message.guild : interaction.guild);
+                if (queue[0]) playSong(player, guild, db);
             }
         });
 
@@ -186,17 +184,26 @@ const fetchThumbnail = (thumbnails) => {
     }
 };
 
-const playSong = async (player, videoId) => {
-    try {
-        const { stream } = await play.stream('https://www.youtube.com/watch?v=' + videoId, { discordPlayerCompatibility: true });
-        const resource = createAudioResource(stream, { inlineVolume: true });
-        resource.volume.setVolume(0.3);
+const playSong = async (player, guild, db) => {
+    const queue = db.get(`server.${guild.id}.music.queue`);
 
-        player.play(resource);
+    if (queue[0]) {
+        const videoId = queue[0].videoId;
+        try {
+            const { stream } = await play.stream('https://www.youtube.com/watch?v=' + videoId, { discordPlayerCompatibility: true });
+            const resource = createAudioResource(stream, { inlineVolume: true });
+            resource.volume.setVolume(0.3);
+
+            player.play(resource);
+        }
+        catch (error) {
+            console.log('error while playing song');
+            queue.shift();
+            db.set(`server.${guild.id}.music.queue`, queue);
+            playSong(player, guild, db);
+        }
     }
-    catch (error) {
-        console.log('error while playing song');
-    }
+    utils.refreshMusicEmbed(db, guild);
 };
 
 const parseSnippet = (snippet, videoId, channelThumbnail) => {
