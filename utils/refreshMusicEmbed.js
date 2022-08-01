@@ -30,7 +30,7 @@ module.exports = async (db, guild) => {
     let queueIndex = music.queueIndex;
     const totalQueuePages = Math.ceil((queue.length - 1) / 5);
 
-    if (queueIndex + 1 > totalQueuePages) {
+    if (queueIndex + 1 > totalQueuePages && queueIndex !== 0) {
         queueIndex = totalQueuePages - 1;
         db.set(`server.${guildId}.music.queueIndex`, queueIndex);
     }
@@ -53,7 +53,7 @@ module.exports = async (db, guild) => {
         }
     }
     queueEmbed.addFields({ name: 'Next Songs', value: queuepageField })
-        .setFooter({ text: `Page ${queueIndex + 1}/${totalQueuePages}` })
+        .setFooter({ text: `Page ${queueIndex + 1}/${totalQueuePages == 0 ? 1 : totalQueuePages}` })
         .setColor(prominentColor)
         .setTitle(`Queue (${db.get(`server.${guildId}.music.queue`).length} tracks)`)
         .setTimestamp();
