@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { createAudioPlayer, createAudioResource, joinVoiceChannel } = require('@discordjs/voice');
+const { createAudioPlayer, createAudioResource, joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
 const superagent = require('superagent');
 const play = require('play-dl');
 const utils = require('../utils');
@@ -50,7 +50,7 @@ module.exports = {
         }
 
         const newQueueLength = db.get(`server.${guild.id}.music.queue`).length;
-        if (client.voice.adapters.get(guild.id)) {
+        if (getVoiceConnection(guild.id)?._state?.subscription?.player) {
             if (link) {
                 if (queueLength === newQueueLength) await utils.reply(interaction, message?.channel, 'Queue already full!');
                 else await utils.reply(interaction, message.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
@@ -60,7 +60,7 @@ module.exports = {
             }
             return;
         }
-        else if (!client.voice.adapters.get(guild.id)) {
+        else if (!getVoiceConnection(guild.id)?._state?.subscription?.player) {
             if (link) {
                 await utils.reply(interaction, message?.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
             }
