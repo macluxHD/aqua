@@ -50,10 +50,7 @@ module.exports = {
         }
 
         const newQueueLength = db.get(`server.${guild.id}.music.queue`).length;
-        if (queueLength !== newQueueLength) {
-            await utils.reply(interaction, message?.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
-        }
-        else if (client.voice.adapters.get(guild.id)) {
+        if (client.voice.adapters.get(guild.id)) {
             if (link) {
                 if (queueLength === newQueueLength) await utils.reply(interaction, message?.channel, 'Queue already full!');
                 else await utils.reply(interaction, message.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
@@ -64,7 +61,12 @@ module.exports = {
             return;
         }
         else if (!client.voice.adapters.get(guild.id)) {
-            await utils.reply(interaction, message?.channel, 'Connecting to voice channel...');
+            if (link) {
+                await utils.reply(interaction, message?.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
+            }
+            else {
+                await utils.reply(interaction, message?.channel, 'Connecting to voice channel...');
+            }
 
             if (link && queueLength === newQueueLength) await utils.reply(interaction, message?.channel, 'Queue already full!');
         }
