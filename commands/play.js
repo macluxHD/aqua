@@ -58,6 +58,7 @@ module.exports = {
             else {
                 await utils.reply(interaction, message?.channel, 'Already Playing!');
             }
+            utils.refreshMusicEmbed(db, guild);
             return;
         }
         else if (!getVoiceConnection(guild.id)?._state?.subscription?.player) {
