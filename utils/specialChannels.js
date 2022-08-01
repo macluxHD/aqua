@@ -1,4 +1,4 @@
-const musicCommands = ['play', 'page', 'skip', 'loop'];
+const musicCommands = ['play', 'page', 'skip', 'loop', 'clearqueue'];
 const ytRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
 
 module.exports = async (utils, client, interaction, db, message) => {
