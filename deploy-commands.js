@@ -16,9 +16,7 @@ for (const file of commandFiles) {
     commands.push(command.data.toJSON());
 }
 
-console.log(commands);
-
-const rest = new REST({ version: '9' }).setToken(process.env.token);
+const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
 
 /* Remove all commands globally
 rest.put(Routes.applicationCommands(process.env.clientId), { body: [] })
@@ -27,6 +25,6 @@ rest.put(Routes.applicationCommands(process.env.clientId), { body: [] })
 */
 
 // Add commands
-rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: commands })
+rest.put(Routes.applicationCommands(process.env.clientId), { body: commands })
     .then(() => console.log('Successfully registered application commands.'))
     .catch(console.error);
