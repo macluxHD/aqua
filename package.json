@@ -4,7 +4,9 @@
   "description": "Discord bot",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js --ignore storage.json --ignore database/"
+    "start": "node .",
+    "dev": "nodemon index.js --ignore storage.json --ignore database/",
+    "startup": "node deploy-commands.js && node ."
   },
   "repository": {
     "type": "git",
