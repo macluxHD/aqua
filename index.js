@@ -45,6 +45,7 @@ const defaultServerData = {
     },
     conf: {
         prefix: '!',
+        musicChannel: null,
     },
 };
 
