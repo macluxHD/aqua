@@ -20,3 +20,7 @@ Now run the following command to register the slash commands. This step is optio
 Finally you can start the bot using the following command.
 
 `npm start`
+
+To invite the bot use the following Link and replace the your-client-id with the application ID from the [Discord Developer Portal](https://discord.com/developers)
+
+`https://discord.com/api/oauth2/authorize?client_id=your-client-id&permissions=8&scope=bot`s
