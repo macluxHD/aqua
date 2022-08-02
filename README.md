@@ -1,3 +1,4 @@
+![license](https://img.shields.io/github/license/macluxHD/aqua)
 # aqua
 
 ## Installation
