@@ -202,6 +202,7 @@ const playSong = async (player, guild, db) => {
         }
         catch (error) {
             console.log('error while playing song');
+            console.error(error);
             queue.shift();
             db.set(`server.${guild.id}.music.queue`, queue);
             playSong(player, guild, db);
