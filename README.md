@@ -23,4 +23,4 @@ Finally you can start the bot using the following command.
 
 To invite the bot use the following Link and replace the your-client-id with the application ID from the [Discord Developer Portal](https://discord.com/developers)
 
-`https://discord.com/api/oauth2/authorize?client_id=your-client-id&permissions=8&scope=bot`s
+`https://discord.com/api/oauth2/authorize?client_id=your-client-id&permissions=8&scope=bot`
