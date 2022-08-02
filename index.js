@@ -6,6 +6,7 @@ require('dotenv').config();
 
 // Require the necessary discord.js classes
 const { Client, Collection } = require('discord.js');
+const { getVoiceConnection } = require('@discordjs/voice');
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -104,6 +105,22 @@ client.on('interactionCreate', async interaction => {
     catch (error) {
         console.error(error);
         await interaction.reply({ content: 'An error occurred while executing that command!', ephemeral: true });
+    }
+});
+
+client.on('voiceStateUpdate', (oldState, newState) => {
+    const guild = newState.guild;
+
+    // Disconnect when noone in Channel anymore
+    if (newState.channelId == null && oldState.channelId != null) {
+        const channel = guild.channels.cache.get(oldState.channelId);
+
+        if (channel.members.size == 1) {
+            const connection = getVoiceConnection(guild.id);
+
+            if (!connection) return;
+            connection.disconnect();
+        }
     }
 });
 
