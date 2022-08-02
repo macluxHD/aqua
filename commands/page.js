@@ -27,6 +27,6 @@ module.exports = {
 
         db.set(`server.${guild.id}.music.queueIndex`, queueIndex);
         utils.refreshMusicEmbed(db, interaction === null ? message.guild : interaction.guild);
-        utils.reply(interaction, message?.channel, `Flipped to page ${queueIndex + 1}!`);
+        utils.reply(interaction, message?.channel, 'Flipped page!');
     },
 };
