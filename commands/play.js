@@ -131,6 +131,7 @@ const addToQueue = (guildId, videoId, playlistId, db) => {
                     const channelThumbnails = await getChannelThumbnail(videoIds);
 
                     for (let i = 0; i < res.body.items.length; i++) {
+                        if (res.body.items[i].snippet.title == 'Private video') continue;
                         db.push(`server.${guildId}.music.queue`, parseSnippet(res.body.items[i].snippet, null, channelThumbnails[res.body.items[i].snippet.videoOwnerChannelId]));
                     }
                     resolve();
