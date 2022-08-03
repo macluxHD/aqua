@@ -17,7 +17,6 @@ module.exports = {
             db.set(`server.${guild.id}.music.queue`, queue.slice(0, 1));
         }
 
-        utils.refreshMusicEmbed(db, guild);
         utils.reply(interaction, message?.channel, 'Cleared the Music Queue!');
     },
 };

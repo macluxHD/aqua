@@ -42,6 +42,7 @@ module.exports = async (utils, client, interaction, db, message) => {
                 console.error(error);
                 await utils.reply(null, message.channel, 'An error occurred while executing that command!');
             }
+            utils.refreshMusicEmbed(db, guild);
             return true;
         }
 
@@ -54,6 +55,7 @@ module.exports = async (utils, client, interaction, db, message) => {
                 console.error(error);
                 await utils.reply(null, message.channel, 'An error occurred while executing that command!');
             }
+            utils.refreshMusicEmbed(db, guild);
             return true;
         }
     }

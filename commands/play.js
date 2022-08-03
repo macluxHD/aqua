@@ -58,7 +58,6 @@ module.exports = {
             else {
                 await utils.reply(interaction, message?.channel, 'Already Playing!');
             }
-            utils.refreshMusicEmbed(db, guild);
             return;
         }
         else if (!getVoiceConnection(guild.id)?._state?.subscription?.player) {
@@ -84,7 +83,7 @@ module.exports = {
                 db.set(`server.${guild.id}.music.queue`, queue);
 
                 if (queue[0]) playSong(player, guild, db);
-                else utils.refreshMusicEmbed(db, guild);
+                utils.refreshMusicEmbed(db, guild);
             }
         });
 
@@ -209,7 +208,6 @@ const playSong = async (player, guild, db) => {
             playSong(player, guild, db);
         }
     }
-    utils.refreshMusicEmbed(db, guild);
 };
 
 const parseSnippet = (snippet, videoId, channelThumbnail) => {
