@@ -37,7 +37,7 @@ module.exports = {
                 }
             }
 
-            const queueRes = await addToQueue(guild.id, videoId, playlistId, db);
+            const queueRes = await addToQueue(guild, videoId, playlistId, db);
 
             if (queueRes === 404) {
                 utils.reply(interaction, message.channel, 'Video not found!');
@@ -102,9 +102,9 @@ module.exports = {
     },
 };
 
-const addToQueue = (guildId, videoId, playlistId, db) => {
+const addToQueue = (guild, videoId, playlistId, db) => {
     return new Promise(async (resolve) => {
-        const queueLength = db.get(`server.${guildId}.music.queue.length`);
+        const queueLength = db.get(`server.${guild.id}.music.queue.length`);
         const maxQueueLength = db.get('config.maxQueueLength');
         if (queueLength >= maxQueueLength) {
             resolve();
@@ -131,8 +131,9 @@ const addToQueue = (guildId, videoId, playlistId, db) => {
 
                     for (let i = 0; i < res.body.items.length; i++) {
                         if (res.body.items[i].snippet.title == 'Private video') continue;
-                        db.push(`server.${guildId}.music.queue`, parseSnippet(res.body.items[i].snippet, null, channelThumbnails[res.body.items[i].snippet.videoOwnerChannelId]));
+                        db.push(`server.${guild.id}.music.queue`, parseSnippet(res.body.items[i].snippet, null, channelThumbnails[res.body.items[i].snippet.videoOwnerChannelId]));
                     }
+                    utils.refreshMusicEmbed(db, guild);
                     resolve();
                     return;
                 });
@@ -145,7 +146,7 @@ const addToQueue = (guildId, videoId, playlistId, db) => {
                 return;
             }
 
-            db.push(`server.${guildId}.music.queue`, videoInfo);
+            db.push(`server.${guild.id}.music.queue`, videoInfo);
             resolve();
         }
     });
