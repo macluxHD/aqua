@@ -22,7 +22,7 @@ module.exports = async (db, guild) => {
     }
     else {
         playerEmbed.setTitle('No music playing')
-            .setImage('https://i.ibb.co/ySSNVP7/Discord-Music-Bot-Help-Embed.png');
+            .setImage('https://raw.githubusercontent.com/macluxHD/aqua/main/assets/helpImage.png');
         queueEmbed.addFields({ name: 'Nothing Playing', value: '`Nothing Playing`' });
     }
 
