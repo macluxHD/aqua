@@ -147,6 +147,7 @@ const addToQueue = (guild, videoId, playlistId, db) => {
             }
 
             db.push(`server.${guild.id}.music.queue`, videoInfo);
+            utils.refreshMusicEmbed(db, guild);
             resolve();
         }
     });
