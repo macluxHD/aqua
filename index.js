@@ -47,6 +47,7 @@ const defaultServerData = {
     conf: {
         prefix: '!',
         musicChannel: null,
+        retainQueue: false,
     },
 };
 
@@ -120,6 +121,11 @@ client.on('voiceStateUpdate', (oldState, newState) => {
 
             if (!connection) return;
             connection.disconnect();
+
+            if (!db.get(`server.${guild.id}.conf.retainQueue`)) {
+                db.set(`server.${guild.id}.music.queue`, []);
+            }
+            utils.refreshMusicEmbed(db, guild);
         }
     }
 });

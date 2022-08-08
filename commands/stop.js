@@ -14,6 +14,10 @@ module.exports = {
         if (!connection) return;
         connection.disconnect();
 
+        if (!db.get(`server.${guild.id}.conf.retainQueue`)) {
+            db.set(`server.${guild.id}.music.queue`, []);
+        }
+
         utils.reply(interaction, message?.channel, 'Stopped Playback!');
     },
 };
