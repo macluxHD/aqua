@@ -99,7 +99,7 @@ client.on('interactionCreate', async interaction => {
         db.set(`server.${guildId}`, defaultServerData);
     }
 
-    if (utils.specialChannels(utils, client, interaction, db)) return;
+    if (await utils.specialChannels(utils, client, interaction, db)) return;
     try {
         await command.execute(client, interaction, db);
     }
