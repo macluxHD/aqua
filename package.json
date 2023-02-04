@@ -25,6 +25,7 @@
     "discord.js": "^14.0.2",
     "dotenv": "^16.0.1",
     "node-vibrant": "^3.1.6",
+    "opusscript": "^0.0.8",
     "play-dl": "^1.9.5",
     "sodium": "^3.0.2",
     "superagent": "^8.0.0"
