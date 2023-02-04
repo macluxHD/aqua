@@ -11,7 +11,7 @@ module.exports = async (db, guild) => {
 
     let prominentColor = [0, 0, 0];
     if (currentVideo) {
-        prominentColor = (await Vibrant.from(currentVideo.thumbnail).getPalette()).Vibrant._rgb;
+        prominentColor = (await Vibrant.from(currentVideo.thumbnail).getPalette()).Vibrant._rgb.map(number => Math.round(number));
 
         playerEmbed.setTitle(currentVideo.title)
             .setURL('https://www.youtube.com/watch?v=' + currentVideo.videoId)
