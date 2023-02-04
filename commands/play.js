@@ -53,7 +53,7 @@ module.exports = {
         if (getVoiceConnection(guild.id)?._state?.subscription?.player) {
             if (link) {
                 if (queueLength === newQueueLength) await utils.reply(interaction, message?.channel, 'Queue already full!');
-                else await utils.reply(interaction, message.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
+                else await utils.reply(interaction, message?.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
             }
             else {
                 await utils.reply(interaction, message?.channel, 'Already Playing!');
@@ -111,7 +111,7 @@ const addToQueue = (guild, videoId, playlistId, db) => {
             return;
         }
         if (playlistId) {
-        // request playlist info from youtube api with superagent
+            // request playlist info from youtube api with superagent
 
             if (maxQueueLength - queueLength <= 0) {
                 resolve();
