@@ -49,6 +49,8 @@ module.exports = {
             return;
         }
 
+        utils.refreshMusicEmbed(db, guild);
+
         const newQueueLength = db.get(`server.${guild.id}.music.queue`).length;
         if (getVoiceConnection(guild.id)?._state?.subscription?.player) {
             if (link) {
@@ -136,7 +138,6 @@ const addToQueue = (guild, videoId, playlistId, db) => {
                         if (res.body.items[i].snippet.title == 'Private video') continue;
                         db.push(`server.${guild.id}.music.queue`, parseSnippet(res.body.items[i].snippet, null, channelThumbnails[res.body.items[i].snippet.videoOwnerChannelId]));
                     }
-                    utils.refreshMusicEmbed(db, guild);
                     resolve();
                     return;
                 });
@@ -150,7 +151,6 @@ const addToQueue = (guild, videoId, playlistId, db) => {
             }
 
             db.push(`server.${guild.id}.music.queue`, videoInfo);
-            utils.refreshMusicEmbed(db, guild);
             resolve();
         }
     });

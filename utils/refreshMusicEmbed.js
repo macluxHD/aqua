@@ -1,6 +1,8 @@
 const { EmbedBuilder } = require('discord.js');
 const Vibrant = require('node-vibrant');
 
+let latestUpdate = 0;
+
 module.exports = async (db, guild) => {
     const guildId = guild.id;
     const music = db.get(`server.${guildId}.music`);
@@ -67,27 +69,36 @@ module.exports = async (db, guild) => {
     const queueEmbedMessage = !music.queueEmbedId ? null : await musicChannel.messages.fetch(music.queueEmbedId)
         .catch(() => null);
 
-    if (!queueEmbedMessage) {
-        musicChannel
-            .send({ embeds: [queueEmbed] })
-            .then(message => {
-                db.set(`server.${guildId}.music.queueEmbedId`, message.id);
-                message.pin();
-            });
-    }
-    else {
-        queueEmbedMessage.edit({ embeds: [queueEmbed] });
-    }
+    const now = Date.now();
+    latestUpdate = now;
 
-    if (!playerEmbedMessage) {
-        musicChannel
-            .send({ embeds: [playerEmbed] })
-            .then(message => {
-                db.set(`server.${guildId}.music.playerEmbedId`, message.id);
-                message.pin();
-            });
-    }
-    else {
-        playerEmbedMessage.edit({ embeds: [playerEmbed] });
-    }
+    setTimeout(() => {
+        if (latestUpdate !== now) {
+            return;
+        }
+
+        if (!queueEmbedMessage) {
+            musicChannel
+                .send({ embeds: [queueEmbed] })
+                .then(message => {
+                    db.set(`server.${guildId}.music.queueEmbedId`, message.id);
+                    message.pin();
+                });
+        }
+        else {
+            queueEmbedMessage.edit({ embeds: [queueEmbed] });
+        }
+
+        if (!playerEmbedMessage) {
+            musicChannel
+                .send({ embeds: [playerEmbed] })
+                .then(message => {
+                    db.set(`server.${guildId}.music.playerEmbedId`, message.id);
+                    message.pin();
+                });
+        }
+        else {
+            playerEmbedMessage.edit({ embeds: [playerEmbed] });
+        }
+    }, 5000);
 };
