@@ -24,12 +24,9 @@ module.exports = async (utils, client, interaction, db, message) => {
         if (!isSlashCommand) {
             setTimeout(() => {
                 if (!message.pinned) {
-                    try {
-                        message.delete();
-                    }
-                    catch (e) {
-                        // console.log(e);
-                    }
+                    message.delete()
+                        // eslint-disable-next-line no-inline-comments
+                        .catch(() => { /* message already deleted */ });
                 }
             }, 5000);
         }
