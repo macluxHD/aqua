@@ -58,7 +58,10 @@ module.exports = {
             else {
                 await utils.reply(interaction, message?.channel, 'Already Playing!');
             }
-            return;
+
+            if (queueLength !== 0) {
+                return;
+            }
         }
         else if (!getVoiceConnection(guild.id)?._state?.subscription?.player) {
             if (link) {
