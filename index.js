@@ -56,13 +56,12 @@ client.once('ready', () => {
     console.log('Ready!');
 });
 
-client.on('guildCreate', guild => {
-    db.set(`server.${guild.id}`, defaultServerData);
-});
-
 client.on('messageCreate', async message => {
     const guildId = message.guild.id;
 
+    if (!db.has(`server.${guildId}`)) {
+        db.set(`server.${guildId}`, defaultServerData);
+    }
     if (utils.specialChannels(utils, client, null, db, message)) return;
 
     const prefix = db.get(`server.${guildId}.conf.prefix`);
