@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../database/db.sqlite"
+}
+
+model Server {
+  id            Int     @id
+  queue         Queue[]
+  loop          Boolean @default(false)
+  queueIndex    Int     @default(0)
+  queueEmbedId  Int?
+  playerEmbedId Int?
+  musicChannel  Int?
+  retainQueue   Boolean @default(false)
+  prefix        String  @default("!")
+}
+
+model Queue {
+  id                  Int    @id @default(autoincrement())
+  server              Server @relation(fields: [serverId], references: [id])
+  serverId            Int
+  videoId             String
+  title               String
+  thumbnailUrl        String
+  author              String
+  channelThumbnailUrl String
+}

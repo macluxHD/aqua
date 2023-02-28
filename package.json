@@ -20,6 +20,7 @@
     "@discordjs/opus": "^0.8.0",
     "@discordjs/rest": "^1.0.0",
     "@discordjs/voice": "^0.11.0",
+    "@prisma/client": "^4.10.1",
     "croxydb": "github:macluxHD/croxydb",
     "discord-api-types": "^0.36.2",
     "discord.js": "^14.0.2",
@@ -31,6 +32,7 @@
     "superagent": "^8.0.0"
   },
   "devDependencies": {
-    "eslint": "^8.20.0"
+    "eslint": "^8.20.0",
+    "prisma": "^4.10.1"
   }
 }
