@@ -8,13 +8,13 @@ datasource db {
 }
 
 model Server {
-  id            Int     @id
+  id            String  @id
   queue         Queue[]
   loop          Boolean @default(false)
   queueIndex    Int     @default(0)
-  queueEmbedId  Int?
-  playerEmbedId Int?
-  musicChannel  Int?
+  queueEmbedId  String?
+  playerEmbedId String?
+  musicChannel  String?
   retainQueue   Boolean @default(false)
   prefix        String  @default("!")
 }
@@ -22,7 +22,7 @@ model Server {
 model Queue {
   id                  Int    @id @default(autoincrement())
   server              Server @relation(fields: [serverId], references: [id])
-  serverId            Int
+  serverId            String
   videoId             String
   title               String
   thumbnailUrl        String
