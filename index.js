@@ -12,6 +12,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const utils = require('./utils');
 
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
 // Create a new client instance
 const client = new Client({ intents: ['Guilds', 'GuildVoiceStates', 'GuildMessages', 'MessageContent'] });
 
@@ -52,8 +55,49 @@ const defaultServerData = {
 };
 
 // When the client is ready, run this code (only once)
-client.once('ready', () => {
+client.once('ready', async () => {
     console.log('Ready!');
+
+    // Check if Database is up to date (could not be due to restarts / crashes)
+    const guilds = client.guilds.cache.map(guild => guild.id);
+    const dbGuilds = (await prisma.server.findMany()).map(guild => guild.id);
+
+    const guildsToDelete = dbGuilds.filter(guild => !guilds.includes(guild));
+    const guildsToAdd = guilds.filter(guild => !dbGuilds.includes(guild));
+
+    for (const guild of guildsToAdd) {
+        console.log(`Adding guild ${guild} to database`);
+        await prisma.server.create({
+            data: {
+                id: guild,
+            },
+        });
+    }
+
+    for (const guild of guildsToDelete) {
+        console.log(`Deleting guild ${guild} from database`);
+        await prisma.server.delete({
+            where: {
+                id: guild,
+            },
+        });
+    }
+});
+
+client.on('guildCreate', guild => {
+    prisma.server.create({
+        data: {
+            id: guild.id,
+        },
+    });
+});
+
+client.on('guildDelete', guild => {
+    prisma.server.delete({
+        where: {
+            id: guild.id,
+        },
+    });
 });
 
 client.on('messageCreate', async message => {
