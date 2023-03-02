@@ -110,7 +110,7 @@ module.exports = {
 const addToQueue = (guild, videoId, playlistId, db) => {
     return new Promise(async (resolve) => {
         const queueLength = db.get(`server.${guild.id}.music.queue.length`);
-        const maxQueueLength = db.get('config.maxQueueLength');
+        const maxQueueLength = process.env.MAX_QUEUE_LENGTH;
         if (queueLength >= maxQueueLength) {
             resolve();
             return;

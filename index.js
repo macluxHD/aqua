@@ -51,13 +51,6 @@ const defaultServerData = {
     },
 };
 
-// Generate global config if it doesn't exist
-if (!db.has('config')) {
-    db.set('config', {
-        'maxQueueLength': 50,
-    });
-}
-
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
     console.log('Ready!');
