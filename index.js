@@ -85,6 +85,7 @@ client.once('ready', async () => {
 });
 
 client.on('guildCreate', guild => {
+    console.log(`Adding guild ${guild} to database`);
     prisma.server.create({
         data: {
             id: guild.id,
@@ -93,6 +94,7 @@ client.on('guildCreate', guild => {
 });
 
 client.on('guildDelete', guild => {
+    console.log(`Deleting guild ${guild} from database`);
     prisma.server.delete({
         where: {
             id: guild.id,
