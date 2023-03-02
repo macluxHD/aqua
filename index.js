@@ -62,7 +62,7 @@ client.on('messageCreate', async message => {
     if (!db.has(`server.${guildId}`)) {
         db.set(`server.${guildId}`, defaultServerData);
     }
-    if (utils.specialChannels(utils, client, null, db, message)) return;
+    if (await utils.specialChannels(utils, client, null, db, message)) return;
 
     const prefix = db.get(`server.${guildId}.conf.prefix`);
 
