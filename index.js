@@ -70,6 +70,7 @@ client.on('messageCreate', async message => {
     const args = message.content.slice(prefix.length).split(/ +/);
 
     const command = client.commands.get(args[0]);
+    if (typeof (command) === 'undefined') return;
 
     try {
         command.execute(client, null, db, message, args);
