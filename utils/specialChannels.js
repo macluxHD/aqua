@@ -15,46 +15,46 @@ module.exports = async (utils, client, interaction, db, message) => {
 
     const isMusicChannel = channel.id == db.get(`server.${guild.id}.conf.musicChannel`);
 
-    if (((!isSlashCommand && command.startsWith(prefix)) || isSlashCommand) && musicCommands.includes(command) && !isMusicChannel) {
+    if (!isMusicChannel && !isSlashCommand && musicCommands.includes(command)) return false;
+
+    if (!isMusicChannel && (musicCommands.includes(command.substring(prefix.length)) || musicCommands.includes(command))) {
         await utils.reply(interaction, channel, 'This command cannot be used here!');
         return true;
     }
 
-    if (isMusicChannel) {
-        if (!isSlashCommand) {
-            setTimeout(() => {
-                if (!message.pinned) {
-                    message.delete()
-                        // eslint-disable-next-line no-inline-comments
-                        .catch(() => { /* message already deleted */ });
-                }
-            }, 5000);
-        }
+    if (!isSlashCommand) {
+        setTimeout(() => {
+            if (!message.pinned) {
+                message.delete()
+                    // eslint-disable-next-line no-inline-comments
+                    .catch(() => { /* message already deleted */ });
+            }
+        }, 5000);
+    }
 
-        if (ytRegex.test(command)) {
-            try {
-                client.commands.get('play').execute(client, interaction, db, message, ['play', command]);
-            }
-            catch (error) {
-                console.error(error);
-                await utils.reply(null, message.channel, 'An error occurred while executing that command!');
-            }
-            utils.refreshMusicEmbed(db, guild);
-            return true;
+    if (ytRegex.test(command)) {
+        try {
+            client.commands.get('play').execute(client, interaction, db, message, ['play', command]);
         }
+        catch (error) {
+            console.error(error);
+            await utils.reply(null, message.channel, 'An error occurred while executing that command!');
+        }
+        utils.refreshMusicEmbed(db, guild);
+        return true;
+    }
 
-        if (musicCommands.includes(command) || musicCommands.includes(command.substring(prefix.length))) {
-            if (command.startsWith(prefix)) command = command.substring(prefix.length);
-            try {
-                client.commands.get(command).execute(client, interaction, db, message, message?.content?.split(/ +/g));
-            }
-            catch (error) {
-                console.error(error);
-                await utils.reply(null, message.channel, 'An error occurred while executing that command!');
-            }
-            utils.refreshMusicEmbed(db, guild);
-            return true;
+    if (musicCommands.includes(command) || musicCommands.includes(command.substring(prefix.length))) {
+        if (command.startsWith(prefix)) command = command.substring(prefix.length);
+        try {
+            client.commands.get(command).execute(client, interaction, db, message, message?.content?.split(/ +/g));
         }
+        catch (error) {
+            console.error(error);
+            await utils.reply(null, message.channel, 'An error occurred while executing that command!');
+        }
+        utils.refreshMusicEmbed(db, guild);
+        return true;
     }
 
     return false;
