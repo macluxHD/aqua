@@ -39,21 +39,6 @@ const db = new croxy({
     'readable': true,
 });
 
-const defaultServerData = {
-    music: {
-        queue: [],
-        loop: false,
-        queueIndex: 0,
-        queueEmbedId: null,
-        playerEmbedId: null,
-    },
-    conf: {
-        prefix: '!',
-        musicChannel: null,
-        retainQueue: false,
-    },
-};
-
 // When the client is ready, run this code (only once)
 client.once('ready', async () => {
     console.log('Ready!');
@@ -105,10 +90,6 @@ client.on('guildDelete', guild => {
 client.on('messageCreate', async message => {
     const guildId = message.guild.id;
 
-    if (!db.has(`server.${guildId}`)) {
-        db.set(`server.${guildId}`, defaultServerData);
-    }
-
     if (await utils.specialChannels(utils, client, null, db, message)) return;
 
     const prefix = db.get(`server.${guildId}.conf.prefix`);
@@ -134,11 +115,6 @@ client.on('interactionCreate', async interaction => {
     const command = client.commands.get(interaction.commandName);
 
     if (!command) return;
-    const guildId = interaction.guildId;
-
-    if (!db.has(`server.${guildId}`)) {
-        db.set(`server.${guildId}`, defaultServerData);
-    }
 
     if (await utils.specialChannels(utils, client, interaction, db)) return;
     try {
