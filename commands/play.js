@@ -21,6 +21,12 @@ module.exports = {
 
         const queueLength = await prisma.queue.count({ where: { guildId: guild.id } });
 
+        const voiceChannel = interaction === null ? message.member.voice.channel : interaction.member.voice.channel;
+        if (!voiceChannel) {
+            await utils.reply(interaction, message.channel, 'You need to be in a voice channel to use this command!');
+            return;
+        }
+
         if (link) {
             // check if the link provided is a youtube link
             const ytRegex = /(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/;
@@ -99,11 +105,6 @@ module.exports = {
         });
 
         // join voice channel
-        const voiceChannel = interaction === null ? message.member.voice.channel : interaction.member.voice.channel;
-        if (!voiceChannel) {
-            await utils.reply(interaction, message.channel, 'You need to be in a voice channel to use this command!');
-            return;
-        }
         const connection = joinVoiceChannel({
             channelId: voiceChannel.id,
             guildId: voiceChannel.guild.id,
