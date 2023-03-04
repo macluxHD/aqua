@@ -6,7 +6,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('skip')
         .setDescription('Skip to the next song!'),
-    async execute(client, interaction, db, message) {
+    async execute(client, interaction, message) {
         const guild = !interaction ? message.guild : interaction.guild;
 
         if (!getVoiceConnection(guild.id)?._state?.subscription?.player?.stop()) {

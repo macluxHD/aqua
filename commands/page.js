@@ -1,6 +1,9 @@
 const { SlashCommandBuilder } = require('discord.js');
 const utils = require('../utils');
 
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('page')
@@ -11,11 +14,11 @@ module.exports = {
                 .setRequired(true)
                 .addChoices(
                     { name: 'Next Page', value: 'next' },
-                    { name: 'Previous  Page', value : 'previous' })),
-    execute(client, interaction, db, message, args) {
+                    { name: 'Previous  Page', value: 'previous' })),
+    async execute(client, interaction, message, args) {
         const guild = !interaction ? message.guild : interaction.guild;
 
-        let queueIndex = db.get(`server.${guild.id}.music.queueIndex`);
+        let queueIndex = await prisma.guilds.findUnique({ where: { id: guild.id } }).then(dbGuild => dbGuild.queueIndex);
         const action = !interaction ? args[1] : interaction.options.get('action').value;
 
         if (action === 'next') {
@@ -25,7 +28,14 @@ module.exports = {
             queueIndex--;
         }
 
-        db.set(`server.${guild.id}.music.queueIndex`, queueIndex);
+        prisma.guilds.update({
+            where: {
+                id: guild.id,
+            },
+            data: {
+                queueIndex: queueIndex,
+            },
+        });
         utils.reply(interaction, message?.channel, 'Flipped page!');
     },
 };

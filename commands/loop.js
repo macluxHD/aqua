@@ -1,15 +1,18 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const utils = require('../utils');
 
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('loop')
         .setDescription('Toggle Loop for Music Queue!'),
-    async execute(client, interaction, db, message) {
+    async execute(client, interaction, message) {
         const guild = !interaction ? message.guild : interaction.guild;
 
-        const loop = db.get(`server.${guild.id}.music.loop`);
-        db.set(`server.${guild.id}.music.loop`, !loop);
+        const loop = await prisma.guild.findUnique({ where: { id: guild.id } }).then(dbGuild => dbGuild.music.loop);
+        prisma.guild.update({ where: { id: guild.id }, data: { loop: !loop } });
 
         utils.reply(interaction, message?.channel, `Loop is now ${!loop ? 'enabled' : 'disabled'}!`);
     },
