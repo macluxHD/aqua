@@ -12,7 +12,7 @@ module.exports = {
         const guild = !interaction ? message.guild : interaction.guild;
 
         const loop = await prisma.guild.findUnique({ where: { id: guild.id } }).then(dbGuild => dbGuild.music.loop);
-        prisma.guild.update({ where: { id: guild.id }, data: { loop: !loop } });
+        await prisma.guild.update({ where: { id: guild.id }, data: { loop: !loop } });
 
         utils.reply(interaction, message?.channel, `Loop is now ${!loop ? 'enabled' : 'disabled'}!`);
     },

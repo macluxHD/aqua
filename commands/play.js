@@ -129,7 +129,7 @@ module.exports = {
 
 const addToQueue = (guild, videoId, playlistId) => {
     return new Promise(async (resolve) => {
-        const queueLength = prisma.queue.count({ where: { guildId: guild.id } });
+        const queueLength = await prisma.queue.count({ where: { guildId: guild.id } });
         const maxQueueLength = process.env.MAX_QUEUE_LENGTH;
         if (queueLength >= maxQueueLength) {
             resolve();
@@ -142,7 +142,6 @@ const addToQueue = (guild, videoId, playlistId) => {
                 resolve();
                 return;
             }
-
             superagent
                 .get('https://www.googleapis.com/youtube/v3/playlistItems')
                 .query({ part: 'snippet', playlistId, key: process.env.YOUTUBE_API_KEY, maxResults: maxQueueLength - queueLength + 1 })
@@ -160,7 +159,7 @@ const addToQueue = (guild, videoId, playlistId) => {
 
                         song.guildId = guild.id;
 
-                        prisma.queue.create({
+                        await prisma.queue.create({
                             data: song,
                         });
                     }
@@ -238,7 +237,7 @@ const playSong = async (player, guild) => {
         catch (error) {
             console.log('error while playing song');
             console.error(error);
-            prisma.queue.delete({ where: { id: queue[0].id } });
+            await prisma.queue.delete({ where: { id: queue[0].id } });
             playSong(player, guild);
         }
     }

@@ -40,7 +40,7 @@ module.exports = async (guild) => {
     else if (queueIndex + 1 > totalQueuePages && queueIndex !== 0) {
         queueIndex = totalQueuePages - 1;
     }
-    prisma.guild.update({ where: { id: guildId }, data: { queueIndex: queueIndex } });
+    await prisma.guild.update({ where: { id: guildId }, data: { queueIndex: queueIndex } });
 
     const queuePage = queue.splice((queueIndex * 5) + 1, 5);
 

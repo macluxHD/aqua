@@ -31,7 +31,7 @@ module.exports = {
             return;
         }
 
-        prisma.guild.update({
+        await prisma.guild.update({
             where: {
                 id: guild.id,
             },

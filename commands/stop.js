@@ -17,9 +17,9 @@ module.exports = {
         if (!connection) return;
         connection.disconnect();
 
-        const dbGuild = prisma.guild.findUnique({ where: { id: guild.id } });
+        const dbGuild = await prisma.guild.findUnique({ where: { id: guild.id } });
         if (!dbGuild.retainQueue) {
-            prisma.queue.deleteMany({
+            await prisma.queue.deleteMany({
                 where: {
                     guildId: guild.id,
                 },

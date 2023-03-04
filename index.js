@@ -61,18 +61,18 @@ client.once('ready', async () => {
     }
 });
 
-client.on('guildCreate', guild => {
+client.on('guildCreate', async guild => {
     console.log(`Adding guild ${guild} to database`);
-    prisma.guild.create({
+    await prisma.guild.create({
         data: {
             id: guild.id,
         },
     });
 });
 
-client.on('guildDelete', guild => {
+client.on('guildDelete', async guild => {
     console.log(`Deleting guild ${guild} from database`);
-    prisma.guild.delete({
+    await prisma.guild.delete({
         where: {
             id: guild.id,
         },
@@ -116,7 +116,7 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
-client.on('voiceStateUpdate', (oldState, newState) => {
+client.on('voiceStateUpdate', async (oldState, newState) => {
     const guild = newState.guild;
 
 
@@ -130,9 +130,9 @@ client.on('voiceStateUpdate', (oldState, newState) => {
             if (!connection) return;
             connection.disconnect();
 
-            const dbGuild = prisma.guild.findUnique({ where: { id: guild.id } });
+            const dbGuild = await prisma.guild.findUnique({ where: { id: guild.id } });
             if (!dbGuild.retainQueue) {
-                prisma.queue.deleteMany({
+                await prisma.queue.deleteMany({
                     where: {
                         guildId: guild.id,
                     },
