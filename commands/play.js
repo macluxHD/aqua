@@ -4,6 +4,9 @@ const superagent = require('superagent');
 const play = require('play-dl');
 const utils = require('../utils');
 
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('play')
@@ -12,11 +15,11 @@ module.exports = {
             option.setName('link')
                 .setDescription('Youtube Link of the song you want to play')
                 .setRequired(false)),
-    async execute(client, interaction, db, message, args) {
+    async execute(client, interaction, message, args) {
         const guild = !interaction ? message.guild : interaction.guild;
         const link = !interaction ? args[1] : interaction.options.getString('link');
 
-        const queueLength = db.get(`server.${guild.id}.music.queue`).length;
+        const queueLength = await prisma.queue.count({ where: { guildId: guild.id } });
 
         const voiceChannel = interaction === null ? message.member.voice.channel : interaction.member.voice.channel;
         if (!voiceChannel) {
@@ -43,21 +46,21 @@ module.exports = {
                 }
             }
 
-            const queueRes = await addToQueue(guild, videoId, playlistId, db);
+            const queueRes = await addToQueue(guild, videoId, playlistId);
 
             if (queueRes === 404) {
                 utils.reply(interaction, message.channel, 'Video not found!');
                 return;
             }
         }
-        else if (db.get(`server.${guild.id}.music.queue`).length === 0) {
+        else if (queueLength === 0) {
             await utils.reply(interaction, message?.channel, 'There is no song in the queue!');
             return;
         }
 
-        utils.refreshMusicEmbed(db, guild);
+        utils.refreshMusicEmbed(guild);
 
-        const newQueueLength = db.get(`server.${guild.id}.music.queue`).length;
+        const newQueueLength = await prisma.queue.count({ where: { guildId: guild.id } });
         if (getVoiceConnection(guild.id)?._state?.subscription?.player) {
             if (link) {
                 if (queueLength === newQueueLength) await utils.reply(interaction, message?.channel, 'Queue already full!');
@@ -84,17 +87,20 @@ module.exports = {
 
         const player = createAudioPlayer();
 
-        playSong(player, guild, db);
+        playSong(player, guild);
 
-        player.on('stateChange', (oldState, newState) => {
+        player.on('stateChange', async (oldState, newState) => {
             if (oldState.status === 'playing' && newState.status === 'idle') {
-                const queue = db.get(`server.${guild.id}.music.queue`);
-                const song = queue.shift();
-                if (db.get(`server.${guild.id}.music.loop`) && song) queue.push(song);
-                db.set(`server.${guild.id}.music.queue`, queue);
+                const queue = await prisma.queue.findMany({ where: { guildId: guild.id } });
+                const dbGuild = await prisma.guild.findUnique({ where: { id: guild.id } });
+                await prisma.queue.delete({ where: { id: queue[0].id } });
+                if (queue[0] && dbGuild.loop) {
+                    delete queue[0].id;
+                    await prisma.queue.create({ data: queue[0] });
+                }
 
-                if (queue[0]) playSong(player, guild, db);
-                utils.refreshMusicEmbed(db, guild);
+                if (queue[0]) playSong(player, guild);
+                utils.refreshMusicEmbed(guild);
             }
         });
 
@@ -108,7 +114,6 @@ module.exports = {
 
         // workaround for https://github.com/discordjs/discord.js/issues/9185
         connection.on('stateChange', (oldState, newState) => {
-            console.log('stateChange');
             const oldNetworking = Reflect.get(oldState, 'networking');
             const newNetworking = Reflect.get(newState, 'networking');
 
@@ -123,9 +128,9 @@ module.exports = {
     },
 };
 
-const addToQueue = (guild, videoId, playlistId, db) => {
+const addToQueue = (guild, videoId, playlistId) => {
     return new Promise(async (resolve) => {
-        const queueLength = db.get(`server.${guild.id}.music.queue.length`);
+        const queueLength = await prisma.queue.count({ where: { guildId: guild.id } });
         const maxQueueLength = process.env.MAX_QUEUE_LENGTH;
         if (queueLength >= maxQueueLength) {
             resolve();
@@ -138,7 +143,6 @@ const addToQueue = (guild, videoId, playlistId, db) => {
                 resolve();
                 return;
             }
-
             superagent
                 .get('https://www.googleapis.com/youtube/v3/playlistItems')
                 .query({ part: 'snippet', playlistId, key: process.env.YOUTUBE_API_KEY, maxResults: maxQueueLength - queueLength + 1 })
@@ -152,7 +156,13 @@ const addToQueue = (guild, videoId, playlistId, db) => {
 
                     for (let i = 0; i < res.body.items.length; i++) {
                         if (res.body.items[i].snippet.title == 'Private video') continue;
-                        db.push(`server.${guild.id}.music.queue`, parseSnippet(res.body.items[i].snippet, null, channelThumbnails[res.body.items[i].snippet.videoOwnerChannelId]));
+                        const song = parseSnippet(res.body.items[i].snippet, null, channelThumbnails[res.body.items[i].snippet.videoOwnerChannelId]);
+
+                        song.guildId = guild.id;
+
+                        await prisma.queue.create({
+                            data: song,
+                        });
                     }
                     resolve();
                     return;
@@ -166,7 +176,11 @@ const addToQueue = (guild, videoId, playlistId, db) => {
                 return;
             }
 
-            db.push(`server.${guild.id}.music.queue`, videoInfo);
+            videoInfo.guildId = guild.id;
+
+            await prisma.queue.create({
+                data: videoInfo,
+            });
             resolve();
         }
     });
@@ -209,8 +223,8 @@ const fetchThumbnail = (thumbnails) => {
     }
 };
 
-const playSong = async (player, guild, db) => {
-    const queue = db.get(`server.${guild.id}.music.queue`);
+const playSong = async (player, guild) => {
+    const queue = await prisma.queue.findMany({ where: { guildId: guild.id } });
 
     if (queue[0]) {
         const videoId = queue[0].videoId;
@@ -224,9 +238,8 @@ const playSong = async (player, guild, db) => {
         catch (error) {
             console.log('error while playing song');
             console.error(error);
-            queue.shift();
-            db.set(`server.${guild.id}.music.queue`, queue);
-            playSong(player, guild, db);
+            await prisma.queue.delete({ where: { id: queue[0].id } });
+            playSong(player, guild);
         }
     }
 };

@@ -5,7 +5,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('ping')
         .setDescription('Replies with the latency!'),
-    async execute(client, interaction, db, message) {
+    async execute(client, interaction, message) {
         utils.reply(interaction, message?.channel, `Pong! Latency is ${client.ws.ping}ms.`);
     },
 };

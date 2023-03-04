@@ -6,7 +6,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('pause')
         .setDescription('Pauses/Resumes Playback!'),
-    async execute(client, interaction, db, message) {
+    async execute(client, interaction, message) {
         const guild = !interaction ? message.guild : interaction.guild;
         const player = getVoiceConnection(guild.id)?._state?.subscription?.player;
 

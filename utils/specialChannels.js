@@ -1,12 +1,17 @@
 const musicCommands = ['play', 'page', 'skip', 'loop', 'clearqueue', 'stop', 'pause'];
 const ytRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/;
 
-module.exports = async (utils, client, interaction, db, message) => {
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+module.exports = async (utils, client, interaction, message) => {
     const isInteraction = interaction !== null;
 
     const guild = isInteraction ? interaction.guild : message.guild;
     const channel = isInteraction ? interaction.channel : message.channel;
-    const prefix = db.get(`server.${guild.id}.conf.prefix`);
+    const dbGuild = await prisma.guild.findUnique({ where: { id: guild.id } });
+
+    const prefix = dbGuild.prefix;
 
     let command;
 
@@ -17,7 +22,7 @@ module.exports = async (utils, client, interaction, db, message) => {
     const isNonPrefixCommand = musicCommands.includes(command);
     const isSlashCommand = isInteraction && musicCommands.includes(interaction.commandName);
 
-    const isMusicChannel = channel.id == db.get(`server.${guild.id}.conf.musicChannel`);
+    const isMusicChannel = channel.id == dbGuild.musicChannel;
 
     if (!isMusicChannel && !isSlashCommand && !isPrefixCommand) return false;
 
@@ -40,26 +45,26 @@ module.exports = async (utils, client, interaction, db, message) => {
 
     if (ytRegex.test(command)) {
         try {
-            client.commands.get('play').execute(client, interaction, db, message, ['play', command]);
+            client.commands.get('play').execute(client, interaction, message, ['play', command]);
         }
         catch (error) {
             console.error(error);
             await utils.reply(null, message.channel, 'An error occurred while executing that command!');
         }
-        utils.refreshMusicEmbed(db, guild);
+        utils.refreshMusicEmbed(guild);
         return true;
     }
 
     if (isPrefixCommand || isSlashCommand || isNonPrefixCommand) {
         if (isPrefixCommand) command = command.substring(prefix.length);
         try {
-            client.commands.get(command).execute(client, interaction, db, message, message?.content?.split(/ +/g));
+            client.commands.get(command).execute(client, interaction, message, message?.content?.split(/ +/g));
         }
         catch (error) {
             console.error(error);
             await utils.reply(null, message.channel, 'An error occurred while executing that command!');
         }
-        utils.refreshMusicEmbed(db, guild);
+        utils.refreshMusicEmbed(guild);
         return true;
     }
 

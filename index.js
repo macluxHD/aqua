@@ -12,6 +12,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const utils = require('./utils');
 
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
 // Create a new client instance
 const client = new Client({ intents: ['Guilds', 'GuildVoiceStates', 'GuildMessages', 'MessageContent'] });
 
@@ -28,44 +31,58 @@ for (const file of commandFiles) {
     client.commands.set(command.data.name, command);
 }
 
-const croxy = require('croxydb');
+// When the client is ready, run this code (only once)
+client.once('ready', async () => {
+    console.log('Ready!');
 
-const db = new croxy({
-    'dbName': 'db',
-    'dbFolder': './database',
-    'readable': true,
+    // Check if Database is up to date (could not be due to restarts / crashes)
+    const guilds = client.guilds.cache.map(guild => guild.id);
+    const dbGuilds = (await prisma.guild.findMany()).map(guild => guild.id);
+
+    const guildsToDelete = dbGuilds.filter(guild => !guilds.includes(guild));
+    const guildsToAdd = guilds.filter(guild => !dbGuilds.includes(guild));
+
+    for (const guild of guildsToAdd) {
+        console.log(`Adding guild ${guild} to database`);
+        await prisma.guild.create({
+            data: {
+                id: guild,
+            },
+        });
+    }
+
+    for (const guild of guildsToDelete) {
+        console.log(`Deleting guild ${guild} from database`);
+        await prisma.guild.delete({
+            where: {
+                id: guild,
+            },
+        });
+    }
 });
 
-const defaultServerData = {
-    music: {
-        queue: [],
-        loop: false,
-        queueIndex: 0,
-        queueEmbedId: null,
-        playerEmbedId: null,
-    },
-    conf: {
-        prefix: '!',
-        musicChannel: null,
-        retainQueue: false,
-    },
-};
+client.on('guildCreate', async guild => {
+    console.log(`Adding guild ${guild} to database`);
+    await prisma.guild.create({
+        data: {
+            id: guild.id,
+        },
+    });
+});
 
-// When the client is ready, run this code (only once)
-client.once('ready', () => {
-    console.log('Ready!');
+client.on('guildDelete', async guild => {
+    console.log(`Deleting guild ${guild} from database`);
+    await prisma.guild.delete({
+        where: {
+            id: guild.id,
+        },
+    });
 });
 
 client.on('messageCreate', async message => {
-    const guildId = message.guild.id;
+    if (await utils.specialChannels(utils, client, null, message)) return;
 
-    if (!db.has(`server.${guildId}`)) {
-        db.set(`server.${guildId}`, defaultServerData);
-    }
-
-    if (await utils.specialChannels(utils, client, null, db, message)) return;
-
-    const prefix = db.get(`server.${guildId}.conf.prefix`);
+    const prefix = await prisma.guild.findUnique({ where: { id: message.guildId } }).then(guild => guild.prefix);
 
     if (!message.content.startsWith(prefix)) return;
     const args = message.content.slice(prefix.length).split(/ +/);
@@ -74,7 +91,7 @@ client.on('messageCreate', async message => {
     if (typeof (command) === 'undefined') return;
 
     try {
-        command.execute(client, null, db, message, args);
+        command.execute(client, null, message, args);
     }
     catch (error) {
         console.error(error);
@@ -88,15 +105,10 @@ client.on('interactionCreate', async interaction => {
     const command = client.commands.get(interaction.commandName);
 
     if (!command) return;
-    const guildId = interaction.guildId;
 
-    if (!db.has(`server.${guildId}`)) {
-        db.set(`server.${guildId}`, defaultServerData);
-    }
-
-    if (await utils.specialChannels(utils, client, interaction, db)) return;
+    if (await utils.specialChannels(utils, client, interaction)) return;
     try {
-        await command.execute(client, interaction, db);
+        await command.execute(client, interaction);
     }
     catch (error) {
         console.error(error);
@@ -104,8 +116,9 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
-client.on('voiceStateUpdate', (oldState, newState) => {
+client.on('voiceStateUpdate', async (oldState, newState) => {
     const guild = newState.guild;
+
 
     // Disconnect when noone in Channel anymore
     if (newState.channelId == null && oldState.channelId != null) {
@@ -117,10 +130,16 @@ client.on('voiceStateUpdate', (oldState, newState) => {
             if (!connection) return;
             connection.disconnect();
 
-            if (!db.get(`server.${guild.id}.conf.retainQueue`)) {
-                db.set(`server.${guild.id}.music.queue`, []);
+            const dbGuild = await prisma.guild.findUnique({ where: { id: guild.id } });
+            if (!dbGuild.retainQueue) {
+                await prisma.queue.deleteMany({
+                    where: {
+                        guildId: guild.id,
+                    },
+                });
             }
-            utils.refreshMusicEmbed(db, guild);
+
+            utils.refreshMusicEmbed(guild);
         }
     }
 });

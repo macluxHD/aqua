@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node .",
     "dev": "nodemon index.js --ignore storage.json --ignore database/",
-    "startup": "node deploy-commands.js && node ."
+    "startup": "npx prisma migrate deploy && node deploy-commands.js && node ."
   },
   "repository": {
     "type": "git",
@@ -20,7 +20,7 @@
     "@discordjs/opus": "^0.8.0",
     "@discordjs/rest": "^1.0.0",
     "@discordjs/voice": "^0.11.0",
-    "croxydb": "github:macluxHD/croxydb",
+    "@prisma/client": "^4.11.0",
     "discord-api-types": "^0.36.2",
     "discord.js": "^14.0.2",
     "dotenv": "^16.0.1",
@@ -31,6 +31,7 @@
     "superagent": "^8.0.0"
   },
   "devDependencies": {
-    "eslint": "^8.20.0"
+    "eslint": "^8.20.0",
+    "prisma": "^4.11.0"
   }
 }
