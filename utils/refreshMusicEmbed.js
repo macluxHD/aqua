@@ -1,26 +1,29 @@
 const { EmbedBuilder } = require('discord.js');
 const Vibrant = require('node-vibrant');
 
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
 let latestUpdate = 0;
 
-module.exports = async (db, guild) => {
+module.exports = async (guild) => {
     const guildId = guild.id;
-    const music = db.get(`server.${guildId}.music`);
-    const currentVideo = music.queue[0];
+    const dbGuild = await prisma.guild.findUnique({ where: { id: guildId } });
+    const queue = await prisma.queue.findMany({ where: { guildId: guildId } });
 
     const playerEmbed = new EmbedBuilder();
     const queueEmbed = new EmbedBuilder();
 
     let prominentColor = [0, 0, 0];
-    if (currentVideo) {
-        prominentColor = (await Vibrant.from(currentVideo.thumbnail).getPalette()).Vibrant._rgb.map(number => Math.round(number));
+    if (queue[0]) {
+        prominentColor = (await Vibrant.from(queue[0].thumbnail).getPalette()).Vibrant._rgb.map(number => Math.round(number));
 
-        playerEmbed.setTitle(currentVideo.title)
-            .setURL('https://www.youtube.com/watch?v=' + currentVideo.videoId)
-            .setImage(currentVideo.thumbnail)
-            .setFooter({ text: currentVideo.author, iconURL: currentVideo.channelThumbnail });
+        playerEmbed.setTitle(queue[0].title)
+            .setURL('https://www.youtube.com/watch?v=' + queue[0].videoId)
+            .setImage(queue[0].thumbnail)
+            .setFooter({ text: queue[0].author, iconURL: queue[0].channelThumbnail });
 
-        queueEmbed.addFields({ name: 'Now Playing', value: `[${currentVideo.title}](https://www.youtube.com/watch?v=${currentVideo.videoId})` });
+        queueEmbed.addFields({ name: 'Now Playing', value: `[${queue[0].title}](https://www.youtube.com/watch?v=${queue[0].videoId})` });
     }
     else {
         playerEmbed.setTitle('No music playing')
@@ -28,8 +31,7 @@ module.exports = async (db, guild) => {
         queueEmbed.addFields({ name: 'Nothing Playing', value: '`Nothing Playing`' });
     }
 
-    const queue = music.queue;
-    let queueIndex = music.queueIndex;
+    let queueIndex = dbGuild.queueIndex;
     const totalQueuePages = Math.ceil((queue.length - 1) / 5);
 
     if (totalQueuePages === 0 || queueIndex < 0) {
@@ -38,7 +40,7 @@ module.exports = async (db, guild) => {
     else if (queueIndex + 1 > totalQueuePages && queueIndex !== 0) {
         queueIndex = totalQueuePages - 1;
     }
-    db.set(`server.${guildId}.music.queueIndex`, queueIndex);
+    prisma.guild.update({ where: { id: guildId }, data: { queueIndex: queueIndex } });
 
     const queuePage = queue.splice((queueIndex * 5) + 1, 5);
 
@@ -56,17 +58,17 @@ module.exports = async (db, guild) => {
     queueEmbed.addFields({ name: 'Next Songs', value: queuepageField })
         .setFooter({ text: `Page ${queueIndex + 1}/${totalQueuePages == 0 ? 1 : totalQueuePages}` })
         .setColor(prominentColor)
-        .setTitle(`Queue (${db.get(`server.${guildId}.music.queue`).length} tracks)`)
+        .setTitle(`Queue (${queue.length} tracks)`)
         .setTimestamp();
 
     playerEmbed.setColor(prominentColor)
         .setTimestamp();
 
-    const musicChannel = guild.channels.cache.find(channel => channel.id == db.get(`server.${guildId}.conf.musicChannel`));
-    const playerEmbedMessage = !music.playerEmbedId ? null : await musicChannel.messages.fetch(music.playerEmbedId)
+    const musicChannel = guild.channels.cache.find(channel => channel.id == dbGuild.musicChannel);
+    const playerEmbedMessage = !dbGuild.playerEmbedId ? null : await musicChannel.messages.fetch(dbGuild.playerEmbedId)
         .catch(() => null);
 
-    const queueEmbedMessage = !music.queueEmbedId ? null : await musicChannel.messages.fetch(music.queueEmbedId)
+    const queueEmbedMessage = !dbGuild.queueEmbedId ? null : await musicChannel.messages.fetch(dbGuild.queueEmbedId)
         .catch(() => null);
 
     const now = Date.now();
@@ -80,8 +82,8 @@ module.exports = async (db, guild) => {
         if (!queueEmbedMessage) {
             musicChannel
                 .send({ embeds: [queueEmbed] })
-                .then(message => {
-                    db.set(`server.${guildId}.music.queueEmbedId`, message.id);
+                .then(async message => {
+                    await prisma.guild.update({ where: { id: guildId }, data: { queueEmbedId: message.id } });
                     message.pin();
                 });
         }
@@ -92,8 +94,8 @@ module.exports = async (db, guild) => {
         if (!playerEmbedMessage) {
             musicChannel
                 .send({ embeds: [playerEmbed] })
-                .then(message => {
-                    db.set(`server.${guildId}.music.playerEmbedId`, message.id);
+                .then(async message => {
+                    await prisma.guild.update({ where: { id: guildId }, data: { playerEmbedId: message.id } });
                     message.pin();
                 });
         }
