@@ -20,9 +20,9 @@ RUN apk add python3
 RUN npm install --location=global npm
 RUN npm install --omit=dev
 
-RUN npx prisma generate
-
 # Bundle app source
 COPY . .
+
+RUN npx prisma generate
 
 CMD [ "npm", "run" , "startup" ]
