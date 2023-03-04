@@ -54,7 +54,7 @@ module.exports = {
 
         utils.refreshMusicEmbed(guild);
 
-        const newQueueLength = prisma.queue.count({ where: { guildId: guild.id } });
+        const newQueueLength = await prisma.queue.count({ where: { guildId: guild.id } });
         if (getVoiceConnection(guild.id)?._state?.subscription?.player) {
             if (link) {
                 if (queueLength === newQueueLength) await utils.reply(interaction, message?.channel, 'Queue already full!');
@@ -83,13 +83,14 @@ module.exports = {
 
         playSong(player, guild);
 
-        player.on('stateChange', (oldState, newState) => {
+        player.on('stateChange', async (oldState, newState) => {
             if (oldState.status === 'playing' && newState.status === 'idle') {
-                const queue = prisma.queue.findMany({ where: { guildId: guild.id } });
-                prisma.queue.delete({ where: { id: queue[0].id } });
-                if (queue.guild.loop && queue[0]) {
+                const queue = await prisma.queue.findMany({ where: { guildId: guild.id } });
+                const dbGuild = await prisma.guild.findUnique({ where: { id: guild.id } });
+                await prisma.queue.delete({ where: { id: queue[0].id } });
+                if (queue[0] && dbGuild.loop) {
                     delete queue[0].id;
-                    prisma.queue.create({ data: queue[0] });
+                    await prisma.queue.create({ data: queue[0] });
                 }
 
                 if (queue[0]) playSong(player, guild);
@@ -155,7 +156,9 @@ const addToQueue = (guild, videoId, playlistId) => {
 
                     for (let i = 0; i < res.body.items.length; i++) {
                         if (res.body.items[i].snippet.title == 'Private video') continue;
-                        const song = parseSnippet(res.body.items[i].snippet, null, channelThumbnails[res.body.items[i].snippet.videoOwnerChannelId], guild.id);
+                        const song = parseSnippet(res.body.items[i].snippet, null, channelThumbnails[res.body.items[i].snippet.videoOwnerChannelId]);
+
+                        song.guildId = guild.id;
 
                         prisma.queue.create({
                             data: song,
@@ -173,7 +176,9 @@ const addToQueue = (guild, videoId, playlistId) => {
                 return;
             }
 
-            prisma.queue.create({
+            videoInfo.guildId = guild.id;
+
+            await prisma.queue.create({
                 data: videoInfo,
             });
             resolve();
@@ -239,9 +244,8 @@ const playSong = async (player, guild) => {
     }
 };
 
-const parseSnippet = (snippet, videoId, channelThumbnail, guildId) => {
+const parseSnippet = (snippet, videoId, channelThumbnail) => {
     return {
-        guildId: guildId,
         videoId: !videoId ? snippet.resourceId.videoId : videoId,
         title: snippet.title,
         thumbnail: fetchThumbnail(snippet.thumbnails).url,
