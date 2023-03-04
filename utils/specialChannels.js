@@ -4,30 +4,34 @@ const ytRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-module.exports = async (utils, client, interaction, message) => {
-    const isSlashCommand = interaction !== null;
+module.exports = async (utils, client, interaction, db, message) => {
+    const isInteraction = interaction !== null;
 
-    const guild = isSlashCommand ? interaction.guild : message.guild;
-    const channel = isSlashCommand ? interaction.channel : message.channel;
+    const guild = isInteraction ? interaction.guild : message.guild;
+    const channel = isInteraction ? interaction.channel : message.channel;
     const dbGuild = await prisma.guild.findUnique({ where: { id: message.guildId } });
 
     const prefix = dbGuild.prefix;
 
     let command;
 
-    if (isSlashCommand) command = interaction.commandName;
+    if (isInteraction) command = interaction.commandName;
     else command = message.content.trim().split(/ +/g)[0];
+
+    const isPrefixCommand = command.startsWith(prefix) && musicCommands.includes(command.substring(prefix.length));
+    const isNonPrefixCommand = musicCommands.includes(command);
+    const isSlashCommand = isInteraction && musicCommands.includes(interaction.commandName);
 
     const isMusicChannel = channel.id == dbGuild.musicChannel;
 
-    if (!isMusicChannel && !isSlashCommand && musicCommands.includes(command)) return false;
+    if (!isMusicChannel && !isSlashCommand && !isPrefixCommand) return false;
 
-    if (!isMusicChannel && (musicCommands.includes(command.substring(prefix.length)) || musicCommands.includes(command))) {
+    if (!isMusicChannel && (isPrefixCommand || isNonPrefixCommand)) {
         await utils.reply(interaction, channel, 'This command cannot be used here!');
         return true;
     }
 
-    if (!isSlashCommand) {
+    if (!isInteraction && isMusicChannel) {
         setTimeout(() => {
             if (!message.pinned) {
                 message.delete()
@@ -36,6 +40,8 @@ module.exports = async (utils, client, interaction, message) => {
             }
         }, 5000);
     }
+
+    if (!isMusicChannel) return false;
 
     if (ytRegex.test(command)) {
         try {
@@ -49,8 +55,8 @@ module.exports = async (utils, client, interaction, message) => {
         return true;
     }
 
-    if (musicCommands.includes(command) || musicCommands.includes(command.substring(prefix.length))) {
-        if (command.startsWith(prefix)) command = command.substring(prefix.length);
+    if (isPrefixCommand || isSlashCommand || isNonPrefixCommand) {
+        if (isPrefixCommand) command = command.substring(prefix.length);
         try {
             client.commands.get(command).execute(client, interaction, message, message?.content?.split(/ +/g));
         }
