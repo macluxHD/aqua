@@ -20,12 +20,12 @@ model Guild {
 }
 
 model Queue {
-  id                  Int    @id @default(autoincrement())
-  guild               Guild  @relation(fields: [guildId], references: [id])
-  guildId             String
-  videoId             String
-  title               String
-  thumbnailUrl        String
-  author              String
-  channelThumbnailUrl String
+  id               Int    @id @default(autoincrement())
+  guild            Guild  @relation(fields: [guildId], references: [id])
+  guildId          String
+  videoId          String
+  title            String
+  thumbnail        String
+  author           String
+  channelThumbnail String
 }
