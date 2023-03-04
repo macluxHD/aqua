@@ -4,7 +4,7 @@ const Vibrant = require('node-vibrant');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-let latestUpdate = 0;
+const latestUpdate = {};
 
 module.exports = async (guild) => {
     const guildId = guild.id;
@@ -72,10 +72,10 @@ module.exports = async (guild) => {
         .catch(() => null);
 
     const now = Date.now();
-    latestUpdate = now;
+    latestUpdate[guildId] = now;
 
     setTimeout(() => {
-        if (latestUpdate !== now) {
+        if (latestUpdate[guildId] !== now) {
             return;
         }
 
