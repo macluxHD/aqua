@@ -88,7 +88,7 @@ client.on('guildDelete', guild => {
 });
 
 client.on('messageCreate', async message => {
-    const guildId = message.guild.id;
+    if (await utils.specialChannels(utils, client, null, message)) return;
 
     if (await utils.specialChannels(utils, client, null, db, message)) return;
 
@@ -116,7 +116,7 @@ client.on('interactionCreate', async interaction => {
 
     if (!command) return;
 
-    if (await utils.specialChannels(utils, client, interaction, db)) return;
+    if (await utils.specialChannels(utils, client, interaction)) return;
     try {
         await command.execute(client, interaction, db);
     }
