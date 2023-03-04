@@ -4,7 +4,7 @@ const ytRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-module.exports = async (utils, client, interaction, db, message) => {
+module.exports = async (utils, client, interaction, message) => {
     const isInteraction = interaction !== null;
 
     const guild = isInteraction ? interaction.guild : message.guild;
