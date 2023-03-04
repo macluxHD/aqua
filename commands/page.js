@@ -39,6 +39,7 @@ module.exports = {
                 queueIndex: queueIndex,
             },
         });
+        utils.refreshMusicEmbed(guild);
         utils.reply(interaction, message?.channel, 'Flipped page!');
     },
 };
