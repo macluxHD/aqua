@@ -18,7 +18,7 @@ module.exports = {
     async execute(client, interaction, message, args) {
         const guild = !interaction ? message.guild : interaction.guild;
 
-        let queueIndex = await prisma.guilds.findUnique({ where: { id: guild.id } }).then(dbGuild => dbGuild.queueIndex);
+        let queueIndex = await prisma.guild.findUnique({ where: { id: guild.id } }).then(dbGuild => dbGuild.queueIndex);
         const action = !interaction ? args[1] : interaction.options.get('action').value;
 
         if (action === 'next') {
@@ -27,8 +27,11 @@ module.exports = {
         else if (action === 'previous') {
             queueIndex--;
         }
+        else {
+            return;
+        }
 
-        prisma.guilds.update({
+        prisma.guild.update({
             where: {
                 id: guild.id,
             },
