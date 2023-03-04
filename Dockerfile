@@ -18,7 +18,7 @@ RUN apk add automake
 RUN apk add python3
 
 RUN npm install --location=global npm
-RUN npm install
+RUN npm install --omit=dev
 
 # Bundle app source
 COPY . .
