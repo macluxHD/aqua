@@ -9,7 +9,7 @@ module.exports = async (utils, client, interaction, message) => {
 
     const guild = isInteraction ? interaction.guild : message.guild;
     const channel = isInteraction ? interaction.channel : message.channel;
-    const dbGuild = await prisma.guild.findUnique({ where: { id: message.guildId } });
+    const dbGuild = await prisma.guild.findUnique({ where: { id: guild.id } });
 
     const prefix = dbGuild.prefix;
 
