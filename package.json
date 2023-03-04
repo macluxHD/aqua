@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node .",
     "dev": "nodemon index.js --ignore storage.json --ignore database/",
-    "startup": "node deploy-commands.js && node ."
+    "startup": "npx prisma migrate deploy && node deploy-commands.js && node ."
   },
   "repository": {
     "type": "git",
