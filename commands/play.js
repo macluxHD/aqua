@@ -19,7 +19,7 @@ module.exports = {
         const guild = !interaction ? message.guild : interaction.guild;
         const link = !interaction ? args[1] : interaction.options.getString('link');
 
-        const queueLength = prisma.queue.count({ where: { guildId: guild.id } });
+        const queueLength = await prisma.queue.count({ where: { guildId: guild.id } });
 
         if (link) {
             // check if the link provided is a youtube link
