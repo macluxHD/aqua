@@ -7,7 +7,7 @@ datasource db {
   url      = "file:../database/db.sqlite"
 }
 
-model Server {
+model Guild {
   id            String  @id
   queue         Queue[]
   loop          Boolean @default(false)
@@ -21,8 +21,8 @@ model Server {
 
 model Queue {
   id                  Int    @id @default(autoincrement())
-  server              Server @relation(fields: [serverId], references: [id])
-  serverId            String
+  guild               Guild  @relation(fields: [guildId], references: [id])
+  guildId             String
   videoId             String
   title               String
   thumbnailUrl        String

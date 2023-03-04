@@ -60,14 +60,14 @@ client.once('ready', async () => {
 
     // Check if Database is up to date (could not be due to restarts / crashes)
     const guilds = client.guilds.cache.map(guild => guild.id);
-    const dbGuilds = (await prisma.server.findMany()).map(guild => guild.id);
+    const dbGuilds = (await prisma.guild.findMany()).map(guild => guild.id);
 
     const guildsToDelete = dbGuilds.filter(guild => !guilds.includes(guild));
     const guildsToAdd = guilds.filter(guild => !dbGuilds.includes(guild));
 
     for (const guild of guildsToAdd) {
         console.log(`Adding guild ${guild} to database`);
-        await prisma.server.create({
+        await prisma.guild.create({
             data: {
                 id: guild,
             },
@@ -76,7 +76,7 @@ client.once('ready', async () => {
 
     for (const guild of guildsToDelete) {
         console.log(`Deleting guild ${guild} from database`);
-        await prisma.server.delete({
+        await prisma.guild.delete({
             where: {
                 id: guild,
             },
@@ -86,7 +86,7 @@ client.once('ready', async () => {
 
 client.on('guildCreate', guild => {
     console.log(`Adding guild ${guild} to database`);
-    prisma.server.create({
+    prisma.guild.create({
         data: {
             id: guild.id,
         },
@@ -95,7 +95,7 @@ client.on('guildCreate', guild => {
 
 client.on('guildDelete', guild => {
     console.log(`Deleting guild ${guild} from database`);
-    prisma.server.delete({
+    prisma.guild.delete({
         where: {
             id: guild.id,
         },
