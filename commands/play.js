@@ -112,7 +112,6 @@ module.exports = {
 
         // workaround for https://github.com/discordjs/discord.js/issues/9185
         connection.on('stateChange', (oldState, newState) => {
-            console.log('stateChange');
             const oldNetworking = Reflect.get(oldState, 'networking');
             const newNetworking = Reflect.get(newState, 'networking');
 
