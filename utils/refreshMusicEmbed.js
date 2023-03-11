@@ -61,7 +61,7 @@ module.exports = async (guild) => {
     queueEmbed.addFields({ name: 'Next Songs', value: queuepageField })
         .setFooter({ text: `Page ${queueIndex + 1}/${totalQueuePages == 0 ? 1 : totalQueuePages}` })
         .setColor(prominentColor)
-        .setTitle(`Queue (${queue.length} tracks)`)
+        .setTitle(`Queue (${queue.length} tracks) ${dbGuild.loop ? ':repeat:' : ''}`)
         .setTimestamp();
 
     playerEmbed.setColor(prominentColor)
