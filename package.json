@@ -32,6 +32,6 @@
   },
   "devDependencies": {
     "eslint": "^8.20.0",
-    "prisma": "^4.11.0"
+    "prisma": "^4.12.0"
   }
 }
