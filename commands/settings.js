@@ -2,6 +2,10 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const utils = require('../utils');
 const settingsmap = require('../settingsmap.json');
 
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+// Create the command
 const command = new SlashCommandBuilder()
     .setName('settings')
     .setDescription('Manage server settings')
@@ -30,6 +34,7 @@ for (const setting of settingsArray) {
     });
 }
 
+// Code to execute when the command is run
 module.exports = {
     data: command,
     async execute(client, interaction, message) {
@@ -42,5 +47,27 @@ module.exports = {
             utils.reply(interaction, message.channel, 'You do not have permission to use this command!');
             return;
         }
+
+        const setting = interaction.options;
+
+        // get the settingname from the settingmap not lower cased
+        const settingname = settingsArray.find(s => s.name.toLowerCase() === setting.getSubcommand()).name;
+        const option = settingsmap[settingname].type;
+
+        await prisma.guild.update({
+            where: {
+                id: interaction.guild.id,
+            },
+            data: {
+                [settingname]: setting.get(option).value,
+
+            },
+        });
+
+        if (option === 'channel') {
+            interaction.reply(`Setting ${settingname} has been set to <#${setting.get(option).value}>`);
+            return;
+        }
+        interaction.reply(`Setting ${settingname} has been set to ${setting.get(option).value}`);
     },
 };
