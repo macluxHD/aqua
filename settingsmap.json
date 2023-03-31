@@ -1,0 +1,14 @@
+{
+  "retainQueue": {
+    "description": "If the queue should be cleared or not when everyone leaves the voice channel",
+    "type": "boolean"
+  },
+  "prefix": {
+    "description": "The prefix for the normal chat commands",
+    "type": "string"
+  },
+  "musicChannel": {
+    "description": "The channel where the music commands should be used",
+    "type": "channel"
+  }
+}
