@@ -8,15 +8,16 @@ datasource db {
 }
 
 model Guild {
-  id            String  @id
-  queue         Queue[]
-  loop          Boolean @default(false)
-  queueIndex    Int     @default(0)
-  queueEmbedId  String?
-  playerEmbedId String?
-  musicChannel  String?
-  retainQueue   Boolean @default(false)
-  prefix        String  @default("!")
+  id                String              @id
+  queue             Queue[]
+  loop              Boolean             @default(false)
+  queueIndex        Int                 @default(0)
+  queueEmbedId      String?
+  playerEmbedId     String?
+  musicChannel      String?
+  retainQueue       Boolean             @default(false)
+  prefix            String              @default("!")
+  AnimeNotification AnimeNotification[]
 }
 
 model Queue {
@@ -28,4 +29,13 @@ model Queue {
   thumbnail        String
   author           String
   channelThumbnail String
+}
+
+model AnimeNotification {
+  id        Int    @id @default(autoincrement())
+  guild     Guild  @relation(fields: [guildId], references: [id])
+  guildId   String
+  channelId String
+  animeId   Int
+  animeDb   String
 }
