@@ -87,4 +87,8 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
+# database files
 database/
+
+# notes and experiments
+.idea/
