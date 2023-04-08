@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder, EmbedBuilder } = require('@discordjs/builders');
 const settingsmap = require('../settingsmap.json');
 
 // helper functions
@@ -89,25 +89,116 @@ module.exports = {
         }
 
         const setting = interaction.options;
+        switch (setting.getSubcommandGroup()) {
+            // settings related to the animenotify feature
+            case 'animenotify':
+                animenotifySettingsHandler(setting, interaction);
+                break;
 
-        // get the settingname from the settingmap not lower cased
-        const settingname = convertToSettingArray(settingsmap.settings).find(s => s.name.toLowerCase() === setting.getSubcommand()).name;
-        const option = settingsmap[settingname].type;
-
-        await prisma.guild.update({
-            where: {
-                id: interaction.guild.id,
-            },
-            data: {
-                [settingname]: setting.get(option).value,
-
-            },
-        });
-
-        if (option === 'channel') {
-            interaction.reply(`Setting ${settingname} has been set to <#${setting.get(option).value}>`);
-            return;
+            // normal setting related to the guild
+            default:
+                guildSettingsHandler(setting, interaction);
+                break;
         }
-        interaction.reply(`Setting ${settingname} has been set to ${setting.get(option).value}`);
     },
 };
+
+async function animenotifySettingsHandler(setting, interaction) {
+    switch (setting.getSubcommand()) {
+        // list all anime on the list
+        case 'list': {
+            const anime = await prisma.anime.findMany({
+                where: {
+                    guildId: interaction.guild.id,
+                },
+            });
+
+            const guild = await prisma.guild.findUnique({
+                where: {
+                    id: interaction.guild.id,
+                },
+            });
+
+            if (anime.length === 0) {
+                interaction.reply('There are no anime on the watchlist!');
+                return;
+            }
+            console.log(guild.aniNotifisBlacklist);
+
+            // TODO: actually fetch the names of the animes using the anilist api
+            const embed = new EmbedBuilder()
+                .setTitle('Anime on the ' + (guild.aniNotifisBlacklist ? 'blacklist' : 'watchlist'))
+                .setDescription(anime.map(a => `${a.animeId}`).join('\n'));
+
+            interaction.reply({ embeds: [embed] });
+            break;
+        }
+        // add an anime from the list
+        case 'add': {
+            // check if there is already an anime with the same id
+            const anime = await prisma.anime.findFirst({
+                where: {
+                    guildId: interaction.guild.id,
+                    animeId: setting.get('animeid').value,
+                },
+            });
+
+            if (anime) {
+                interaction.reply('This anime is already being watched!');
+                return;
+            }
+
+            await prisma.anime.create({
+                data: {
+                    guildId: interaction.guild.id,
+                    animeId: setting.get('animeid').value,
+                },
+            });
+            interaction.reply('Anime has been added to the watchlist!');
+            break;
+        }
+        // remove an anime from the list
+        case 'remove': {
+            // check if there is already an anime with the same id
+            const anime = await prisma.anime.findFirst({
+                where: {
+                    guildId: interaction.guild.id,
+                    animeId: setting.get('animeid').value,
+                },
+            });
+
+            if (!anime) {
+                interaction.reply('This anime is not in the list, there is nothing to be removed here!');
+                return;
+            }
+
+            await prisma.anime.delete({
+                where: {
+                    id: anime.id,
+                },
+            });
+            interaction.reply('Anime has been removed from the watchlist!');
+            break;
+        }
+    }
+}
+
+async function guildSettingsHandler(setting, interaction) {
+    const option = settingsmap.settings[setting.getSubcommand()].options[0];
+
+    await prisma.guild.update({
+        where: {
+            id: interaction.guild.id,
+        },
+        data: {
+            [option.rowname]: setting.get(option.name).value,
+
+        },
+    });
+
+    if (option.name === 'channel') {
+        interaction.reply(`Setting ${setting.getSubcommand()} has been set to <#${setting.get(option.name).value}>`);
+        return;
+    }
+    interaction.reply(`Setting ${setting.getSubcommand()} has been set to ${setting.get(option.name).value}`);
+}
