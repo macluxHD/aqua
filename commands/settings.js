@@ -13,27 +13,65 @@ const command = new SlashCommandBuilder()
     .setDescription('Manage server settings')
     .setDefaultMemberPermissions(0);
 
-const settingsArray = Object.keys(settingsmap).map(key => {
-    return {
-        name: key,
-        ...settingsmap[key],
-    };
-});
+function convertToSettingArray(settings) {
+    return Object.keys(settings).map(key => {
+        return {
+            name: key,
+            ...settings[key],
+        };
+    });
+}
 
-for (const setting of settingsArray) {
-    command.addSubcommand(subcommand => {
+function addOption(opt, option, optionTemplate) {
+    return opt.setName(option.name).setRequired(option.required).setDescription(optionTemplate.description);
+}
+
+function createSub(cmd, setting) {
+    return cmd.addSubcommand(sub => {
+        sub.setName(setting.name.toLowerCase())
+            .setDescription(setting.description);
+
+        if (!setting.options) return sub;
+        for (const option of setting.options) {
+            const optionTemplate = settingsmap.options[option.name];
+            switch (optionTemplate.type) {
+                case 'boolean':
+                    sub.addBooleanOption(opt => addOption(opt, option, optionTemplate));
+                    break;
+                case 'string':
+                    sub.addStringOption(opt => addOption(opt, option, optionTemplate));
+                    break;
+                case 'channel':
+                    sub.addChannelOption(opt => addOption(opt, option, optionTemplate));
+                    break;
+                case 'choices':
+                    sub.addStringOption(opt => addOption(opt, option, optionTemplate).addChoices(...optionTemplate.choices));
+                    break;
+            }
+        }
+        return sub;
+    });
+}
+
+function createSubGroup(cmd, setting) {
+    return cmd.addSubcommandGroup(subcommand => {
         subcommand.setName(setting.name.toLowerCase())
             .setDescription(setting.description);
 
-        switch (setting.type) {
-            case 'boolean':
-                return subcommand.addBooleanOption(option => option.setName('boolean').setRequired(true).setDescription('True or false'));
-            case 'string':
-                return subcommand.addStringOption(option => option.setName('string').setRequired(true).setDescription('String'));
-            case 'channel':
-                return subcommand.addChannelOption(option => option.setName('channel').setRequired(true).setDescription('Channel'));
+        for (const sub of convertToSettingArray(setting.subcommands)) {
+            subcommand = createSub(subcommand, sub);
         }
+        return subcommand;
     });
+}
+
+for (const setting of convertToSettingArray(settingsmap.settings)) {
+    if (!setting.subcommands) {
+        createSub(command, setting);
+    }
+    else {
+        createSubGroup(command, setting);
+    }
 }
 
 // Code to execute when the command is run
@@ -53,7 +91,7 @@ module.exports = {
         const setting = interaction.options;
 
         // get the settingname from the settingmap not lower cased
-        const settingname = settingsArray.find(s => s.name.toLowerCase() === setting.getSubcommand()).name;
+        const settingname = convertToSettingArray(settingsmap.settings).find(s => s.name.toLowerCase() === setting.getSubcommand()).name;
         const option = settingsmap[settingname].type;
 
         await prisma.guild.update({
