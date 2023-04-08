@@ -37,6 +37,5 @@ model Anime {
   id      Int    @id @default(autoincrement())
   guild   Guild  @relation(fields: [guildId], references: [id])
   guildId String
-  animeId Int
-  animeDb String
+  animeId String
 }

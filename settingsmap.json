@@ -26,18 +26,12 @@
       "subcommands": {
         "add": {
           "description": "Add a new anime to the list",
-          "options": [
-            { "name": "anidb", "required": true },
-            { "name": "animeid", "required": true }
-          ]
+          "options": [{ "name": "animeid", "required": true }]
         },
         "remove": {
           "description": "Remove an anime from the list",
           "type": "string",
-          "options": [
-            { "name": "anidb", "required": true },
-            { "name": "animeid", "required": true }
-          ]
+          "options": [{ "name": "animeid", "required": true }]
         },
         "list": {
           "description": "List all the anime in the list"
@@ -58,24 +52,6 @@
     "channel": {
       "description": "The channel to set",
       "type": "channel"
-    },
-    "anidb": {
-      "description": "The database from which the id is taken",
-      "type": "choices",
-      "choices": [
-        {
-          "name": "MyAnimeList",
-          "value": "mal"
-        },
-        {
-          "name": "AniList",
-          "value": "anilist"
-        },
-        {
-          "name": "Anidb",
-          "value": "anidb"
-        }
-      ]
     },
     "animeid": {
       "description": "The id of the anime",
