@@ -27,7 +27,7 @@
         "add": {
           "description": "Add a new anime to the list",
           "options": [
-            { "name": "db", "required": true },
+            { "name": "anidb", "required": true },
             { "name": "animeid", "required": true }
           ]
         },
@@ -35,7 +35,7 @@
           "description": "Remove an anime from the list",
           "type": "string",
           "options": [
-            { "name": "db", "required": true },
+            { "name": "anidb", "required": true },
             { "name": "animeid", "required": true }
           ]
         },
@@ -59,7 +59,7 @@
       "description": "The channel to set",
       "type": "channel"
     },
-    "db": {
+    "anidb": {
       "description": "The database from which the id is taken",
       "type": "choices",
       "choices": [
