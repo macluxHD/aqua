@@ -12,6 +12,10 @@
       "description": "The channel where the music commands should be used",
       "options": [{ "name": "channel", "required": true }]
     },
+    "animeNotifyChannel": {
+      "description": "The channel where the anime notifications should be sent",
+      "options": [{ "name": "channel", "required": true }]
+    },
     "animenotify": {
       "subcommands": {
         "add": {
