@@ -14,7 +14,7 @@ model Guild {
   queueIndex          Int     @default(0)
   queueEmbedId        String?
   playerEmbedId       String?
-  musicChannel        String?
+  musicChannelId      String?
   retainQueue         Boolean @default(false)
   prefix              String  @default("!")
   anime               Anime[]

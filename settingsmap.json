@@ -1,20 +1,26 @@
 {
   "settings": {
-    "retainQueue": {
+    "retainqueue": {
       "description": "If the queue should be cleared or not when everyone leaves the voice channel",
-      "options": [{ "name": "retain", "required": true }]
+      "options": [
+        { "name": "retain", "required": true, "rowname": "retainQueue" }
+      ]
     },
     "prefix": {
       "description": "The prefix for the normal chat commands",
-      "options": [{ "name": "prefix", "required": true }]
+      "options": [{ "name": "prefix", "required": true, "rowname": "prefix" }]
     },
-    "musicChannel": {
+    "musicchannel": {
       "description": "The channel where the music commands should be used",
-      "options": [{ "name": "channel", "required": true }]
+      "options": [
+        { "name": "channel", "required": true, "rowname": "musicChannelId" }
+      ]
     },
-    "animeNotifyChannel": {
+    "animenotifychannel": {
       "description": "The channel where the anime notifications should be sent",
-      "options": [{ "name": "channel", "required": true }]
+      "options": [
+        { "name": "channel", "required": true, "rowname": "aniNotifChannelId" }
+      ]
     },
     "animenotify": {
       "subcommands": {

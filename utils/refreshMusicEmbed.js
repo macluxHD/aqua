@@ -72,7 +72,7 @@ module.exports = async (guild) => {
     playerEmbed.setColor(prominentColor)
         .setTimestamp();
 
-    const musicChannel = guild.channels.cache.find(channel => channel.id == dbGuild.musicChannel);
+    const musicChannel = guild.channels.cache.find(channel => channel.id == dbGuild.musicChannelId);
     const playerEmbedMessage = !dbGuild.playerEmbedId ? null : await musicChannel.messages.fetch(dbGuild.playerEmbedId)
         .catch(() => null);
 

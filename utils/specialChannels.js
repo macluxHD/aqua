@@ -33,7 +33,7 @@ module.exports = async (client, interaction, message) => {
     const isNonPrefixCommand = musicCommands.includes(command);
     const isSlashCommand = isInteraction && musicCommands.includes(interaction.commandName);
 
-    const isMusicChannel = channel.id == dbGuild.musicChannel;
+    const isMusicChannel = channel.id == dbGuild.musicChannelId;
 
     if (!isMusicChannel && !isSlashCommand && !isPrefixCommand) return false;
 

@@ -28,7 +28,7 @@ function addOption(opt, option, optionTemplate) {
 
 function createSub(cmd, setting) {
     return cmd.addSubcommand(sub => {
-        sub.setName(setting.name.toLowerCase())
+        sub.setName(setting.name)
             .setDescription(setting.description);
 
         if (!setting.options) return sub;
@@ -55,7 +55,7 @@ function createSub(cmd, setting) {
 
 function createSubGroup(cmd, setting) {
     return cmd.addSubcommandGroup(subcommand => {
-        subcommand.setName(setting.name.toLowerCase())
+        subcommand.setName(setting.name)
             .setDescription(setting.description);
 
         for (const sub of convertToSettingArray(setting.subcommands)) {
