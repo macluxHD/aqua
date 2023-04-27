@@ -1,6 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { getVoiceConnection } = require('@discordjs/voice');
-const utils = require('../utils');
+
+// helper functions
+const reply = require('../utils/reply');
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -20,6 +22,6 @@ module.exports = {
             await prisma.queue.deleteMany({ where: { guildId: guild.id, NOT: { id: queue[0].id } } });
         }
 
-        utils.reply(interaction, message?.channel, 'Cleared the Music Queue!');
+        reply(interaction, message?.channel, 'Cleared the Music Queue!');
     },
 };

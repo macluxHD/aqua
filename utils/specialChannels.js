@@ -4,7 +4,18 @@ const ytRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-module.exports = async (utils, client, interaction, message) => {
+// helper functions
+const reply = require('./reply');
+const refreshMusicEmbed = require('./refreshMusicEmbed');
+
+/**
+ * Checks if the command has been used in a special channel and if so, handles it accordingly
+ * @param {any} client
+ * @param {any} interaction
+ * @param {any} message
+ * @returns {any}
+ */
+module.exports = async (client, interaction, message) => {
     const isInteraction = interaction !== null;
 
     const guild = isInteraction ? interaction.guild : message.guild;
@@ -27,7 +38,7 @@ module.exports = async (utils, client, interaction, message) => {
     if (!isMusicChannel && !isSlashCommand && !isPrefixCommand) return false;
 
     if (!isMusicChannel && (isPrefixCommand || isNonPrefixCommand)) {
-        await utils.reply(interaction, channel, 'This command cannot be used here!');
+        await reply(interaction, channel, 'This command cannot be used here!');
         return true;
     }
 
@@ -49,9 +60,9 @@ module.exports = async (utils, client, interaction, message) => {
         }
         catch (error) {
             console.error(error);
-            await utils.reply(null, message.channel, 'An error occurred while executing that command!');
+            await reply(null, message.channel, 'An error occurred while executing that command!');
         }
-        utils.refreshMusicEmbed(guild);
+        refreshMusicEmbed(guild);
         return true;
     }
 
@@ -62,9 +73,9 @@ module.exports = async (utils, client, interaction, message) => {
         }
         catch (error) {
             console.error(error);
-            await utils.reply(null, message.channel, 'An error occurred while executing that command!');
+            await reply(null, message.channel, 'An error occurred while executing that command!');
         }
-        utils.refreshMusicEmbed(guild);
+        refreshMusicEmbed(guild);
         return true;
     }
 

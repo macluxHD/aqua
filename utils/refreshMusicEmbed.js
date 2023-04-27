@@ -6,6 +6,11 @@ const prisma = new PrismaClient();
 
 const latestUpdate = {};
 
+/**
+ * Refreshes the Music Embeds
+ * @param {any} guild
+ * @returns {any}
+ */
 module.exports = async (guild) => {
     const guildId = guild.id;
     const dbGuild = await prisma.guild.findUnique({ where: { id: guildId } });

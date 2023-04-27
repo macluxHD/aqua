@@ -2,7 +2,10 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { createAudioPlayer, createAudioResource, joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
 const superagent = require('superagent');
 const play = require('play-dl');
-const utils = require('../utils');
+
+// helper functions
+const reply = require('../utils/reply');
+const refreshMusicEmbed = require('../utils/refreshMusicEmbed');
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -23,7 +26,7 @@ module.exports = {
 
         const voiceChannel = interaction === null ? message.member.voice.channel : interaction.member.voice.channel;
         if (!voiceChannel) {
-            await utils.reply(interaction, message.channel, 'You need to be in a voice channel to use this command!');
+            await reply(interaction, message.channel, 'You need to be in a voice channel to use this command!');
             return;
         }
 
@@ -33,7 +36,7 @@ module.exports = {
             const videoId = link.match(ytRegex)[1];
 
             if (!ytRegex.test(link)) {
-                await utils.reply(interaction, message.channel, 'Invalid link!');
+                await reply(interaction, message.channel, 'Invalid link!');
                 return;
             }
             let ampersand_pos = '';
@@ -49,25 +52,25 @@ module.exports = {
             const queueRes = await addToQueue(guild, videoId, playlistId);
 
             if (queueRes === 404) {
-                utils.reply(interaction, message.channel, 'Video not found!');
+                reply(interaction, message.channel, 'Video not found!');
                 return;
             }
         }
         else if (queueLength === 0) {
-            await utils.reply(interaction, message?.channel, 'There is no song in the queue!');
+            await reply(interaction, message?.channel, 'There is no song in the queue!');
             return;
         }
 
-        utils.refreshMusicEmbed(guild);
+        refreshMusicEmbed(guild);
 
         const newQueueLength = await prisma.queue.count({ where: { guildId: guild.id } });
         if (getVoiceConnection(guild.id)?._state?.subscription?.player) {
             if (link) {
-                if (queueLength === newQueueLength) await utils.reply(interaction, message?.channel, 'Queue already full!');
-                else await utils.reply(interaction, message?.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
+                if (queueLength === newQueueLength) await reply(interaction, message?.channel, 'Queue already full!');
+                else await reply(interaction, message?.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
             }
             else {
-                await utils.reply(interaction, message?.channel, 'Already Playing!');
+                await reply(interaction, message?.channel, 'Already Playing!');
             }
 
             if (queueLength !== 0) {
@@ -76,13 +79,13 @@ module.exports = {
         }
         else if (!getVoiceConnection(guild.id)?._state?.subscription?.player) {
             if (link) {
-                await utils.reply(interaction, message?.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
+                await reply(interaction, message?.channel, `Added ${newQueueLength - queueLength} Song${newQueueLength - queueLength > 1 ? 's' : ''} to queue!`);
             }
             else {
-                await utils.reply(interaction, message?.channel, 'Connecting to voice channel...');
+                await reply(interaction, message?.channel, 'Connecting to voice channel...');
             }
 
-            if (link && queueLength === newQueueLength) await utils.reply(interaction, message?.channel, 'Queue already full!');
+            if (link && queueLength === newQueueLength) await reply(interaction, message?.channel, 'Queue already full!');
         }
 
         const player = createAudioPlayer();
@@ -100,7 +103,7 @@ module.exports = {
                 }
 
                 if (queue[0]) playSong(player, guild);
-                utils.refreshMusicEmbed(guild);
+                refreshMusicEmbed(guild);
             }
         });
 

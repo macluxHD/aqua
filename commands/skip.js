@@ -1,6 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { getVoiceConnection } = require('@discordjs/voice');
-const utils = require('../utils');
+
+// helper functions
+const reply = require('../utils/reply');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,10 +12,10 @@ module.exports = {
         const guild = !interaction ? message.guild : interaction.guild;
 
         if (!getVoiceConnection(guild.id)?._state?.subscription?.player?.stop()) {
-            await utils.reply(interaction, message?.channel, 'No song is playing!');
+            await reply(interaction, message?.channel, 'No song is playing!');
             return;
         }
 
-        utils.reply(interaction, message?.channel, 'Skipped to the next song!');
+        reply(interaction, message?.channel, 'Skipped to the next song!');
     },
 };

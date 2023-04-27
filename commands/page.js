@@ -1,5 +1,8 @@
 const { SlashCommandBuilder } = require('discord.js');
-const utils = require('../utils');
+
+// helper functions
+const refreshMusicEmbed = require('../utils/refreshMusicEmbed');
+const reply = require('../utils/reply');
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -39,7 +42,7 @@ module.exports = {
                 queueIndex: queueIndex,
             },
         });
-        utils.refreshMusicEmbed(guild);
-        utils.reply(interaction, message?.channel, 'Flipped page!');
+        refreshMusicEmbed(guild);
+        reply(interaction, message?.channel, 'Flipped page!');
     },
 };

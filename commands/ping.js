@@ -1,11 +1,13 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const utils = require('../utils');
+
+// helper functions
+const reply = require('../utils/reply');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ping')
         .setDescription('Replies with the latency!'),
     async execute(client, interaction, message) {
-        utils.reply(interaction, message?.channel, `Pong! Latency is ${client.ws.ping}ms.`);
+        reply(interaction, message?.channel, `Pong! Latency is ${client.ws.ping}ms.`);
     },
 };
