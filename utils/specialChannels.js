@@ -8,6 +8,13 @@ const prisma = new PrismaClient();
 const reply = require('./reply');
 const refreshMusicEmbed = require('./refreshMusicEmbed');
 
+/**
+ * Checks if the command has been used in a special channel and if so, handles it accordingly
+ * @param {any} client
+ * @param {any} interaction
+ * @param {any} message
+ * @returns {any}
+ */
 module.exports = async (client, interaction, message) => {
     const isInteraction = interaction !== null;
 

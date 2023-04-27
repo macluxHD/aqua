@@ -1,3 +1,10 @@
+/**
+ * Generic reply function for both slash commands and normal messages
+ * @param {any} interaction
+ * @param {any} channel
+ * @param {any} message
+ * @returns {any}
+ */
 module.exports = (interaction, channel, message) => {
     return new Promise(async (resolve) => {
         if (interaction === null) {
