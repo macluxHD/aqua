@@ -1,6 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { getVoiceConnection } = require('@discordjs/voice');
-const utils = require('../utils');
+
+// helper functions
+const reply = require('../utils/reply');
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -26,6 +28,6 @@ module.exports = {
             });
         }
 
-        utils.reply(interaction, message?.channel, 'Stopped Playback!');
+        reply(interaction, message?.channel, 'Stopped Playback!');
     },
 };

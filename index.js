@@ -10,7 +10,11 @@ const { getVoiceConnection } = require('@discordjs/voice');
 
 const fs = require('node:fs');
 const path = require('node:path');
-const utils = require('./utils');
+
+// helper functions
+const specialChannels = require('./utils/specialChannels');
+const reply = require('./utils/reply');
+const refreshMusicEmbed = require('./utils/refreshMusicEmbed');
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -80,7 +84,7 @@ client.on('guildDelete', async guild => {
 });
 
 client.on('messageCreate', async message => {
-    if (await utils.specialChannels(utils, client, null, message)) return;
+    if (await specialChannels(client, null, message)) return;
 
     const prefix = await prisma.guild.findUnique({ where: { id: message.guildId } }).then(guild => guild.prefix);
 
@@ -95,7 +99,7 @@ client.on('messageCreate', async message => {
     }
     catch (error) {
         console.error(error);
-        await utils.reply(null, message.channel, 'An error occurred while executing that command!');
+        await reply(null, message.channel, 'An error occurred while executing that command!');
     }
 });
 
@@ -106,7 +110,7 @@ client.on('interactionCreate', async interaction => {
 
     if (!command) return;
 
-    if (await utils.specialChannels(utils, client, interaction)) return;
+    if (await specialChannels(client, interaction, null)) return;
     try {
         await command.execute(client, interaction);
     }
@@ -139,7 +143,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
                 });
             }
 
-            utils.refreshMusicEmbed(guild);
+            refreshMusicEmbed(guild);
         }
     }
 });

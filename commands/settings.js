@@ -1,6 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const utils = require('../utils');
 const settingsmap = require('../settingsmap.json');
+
+// helper functions
+const reply = require('../utils/reply');
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -39,12 +41,12 @@ module.exports = {
     data: command,
     async execute(client, interaction, message) {
         if (!interaction) {
-            utils.reply(interaction, message.channel, 'This command can only be used as a slash command!');
+            reply(interaction, message.channel, 'This command can only be used as a slash command!');
             return;
         }
         const member = interaction.member;
         if (!member.permissions.has('ADMINISTRATOR')) {
-            utils.reply(interaction, message.channel, 'You do not have permission to use this command!');
+            reply(interaction, message.channel, 'You do not have permission to use this command!');
             return;
         }
 
