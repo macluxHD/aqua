@@ -123,7 +123,6 @@ async function animenotifySettingsHandler(setting, interaction) {
                 interaction.reply('There are no anime on the watchlist!');
                 return;
             }
-            console.log(guild.aniNotifisBlacklist);
 
             // TODO: actually fetch the names of the animes using the anilist api
             const embed = new EmbedBuilder()
