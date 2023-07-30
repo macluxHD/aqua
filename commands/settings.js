@@ -142,7 +142,7 @@ async function animenotifySettingsHandler(setting, interaction) {
                 },
             });
 
-            if (anime) {
+            if (anime !== null) {
                 interaction.reply('This anime is already being watched!');
                 return;
             }
