@@ -7,6 +7,8 @@ const reply = require('../utils/reply');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+const superagent = require('superagent');
+
 // Create the command
 const command = new SlashCommandBuilder()
     .setName('settings')
@@ -147,13 +149,24 @@ async function animenotifySettingsHandler(setting, interaction) {
                 return;
             }
 
+            const route = await superagent.get('https://animeschedule.net/api/v3/anime')
+                .query({ 'anilist-ids': setting.get('animeid').value })
+                .then(res => {
+                    return res.body.anime[0].route;
+                })
+                .catch(() => {
+                    interaction.reply('Error while fetching anime using id, may not exist!');
+                    return;
+                });
+
             await prisma.anime.create({
                 data: {
                     guildId: interaction.guild.id,
                     animeId: setting.get('animeid').value,
+                    anischeduleRoute: route,
                 },
             });
-            interaction.reply('Anime has been added to the watchlist!');
+            interaction.reply('Anime has been added to the list!');
             break;
         }
         // remove an anime from the list
@@ -176,7 +189,7 @@ async function animenotifySettingsHandler(setting, interaction) {
                     id: anime.id,
                 },
             });
-            interaction.reply('Anime has been removed from the watchlist!');
+            interaction.reply('Anime has been removed from the list!');
             break;
         }
     }
