@@ -20,7 +20,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 // Create a new client instance
-const client = new Client({ intents: ['Guilds', 'GuildVoiceStates', 'GuildMessages', 'MessageContent'] });
+const client = new Client({ intents: ['Guilds', 'GuildVoiceStates', 'GuildMessages', 'MessageContent', 'GuildMessageReactions'] });
 
 // Create a new collection to hold the commands
 client.commands = new Collection();
@@ -151,6 +151,17 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
             refreshMusicEmbed(guild);
         }
+    }
+});
+
+client.on('messageReactionAdd', async (reaction, user) => {
+    // Check if the person who reacted is an admin
+    const member = await reaction.message.guild.members.fetch(user.id);
+    if (!member.permissions.has('ADMINISTRATOR')) return;
+
+    // Check if the reaction is on a aniNotify Embed
+    if (reaction.message.embeds[0].data.footer.text == 'Powered by animeschedule.net') {
+        animeNotifier.react(reaction);
     }
 });
 

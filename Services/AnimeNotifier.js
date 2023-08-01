@@ -84,13 +84,73 @@ async function notify(client, dayOfTheWeek) {
                 .addFields(
                     { name: 'Air time', value: `<t:${moment.utc(anime.episodeDate).unix()}:R>` },
                 )
+                .setFooter({ text: 'Powered by animeschedule.net' })
                 .setColor('#00b0f4');
             await aniNotifChannel.send({ embeds: [embed] });
         }
     });
 }
 
+// Handles reactions on the anime notifications
+async function react(reaction) {
+    if (reaction.emoji.name === '❌') {
+        const animeId = reaction.message.embeds[0].data.url.match(/\/anime\/(\d+)\//)[1];
+        reaction.message.channel.send(`Removing anime with id ${animeId} from the list...`);
+
+        const guild = await prisma.guild.findUnique({ where: { id: reaction.message.guild.id } });
+
+        if (guild.aniNotifisBlacklist) {
+            // check if anime is already on the list
+            const anime = await prisma.anime.findFirst({
+                where: {
+                    guildId: reaction.message.guild.id,
+                    animeId: animeId,
+                },
+            });
+
+            if (anime != null) return;
+
+            const route = await superagent.get('https://animeschedule.net/api/v3/anime')
+                .query({ 'anilist-ids': animeId })
+                .then(res => {
+                    return res.body.anime[0].route;
+                })
+                .catch(() => {
+                    reaction.message.channel.send(`Error while fetching anime with id ${animeId}, may not exist!`);
+                    return false;
+                });
+
+            if (!route) return;
+
+            await prisma.anime.create({
+                data: {
+                    guildId: reaction.message.guild.id,
+                    animeId: animeId,
+                    anischeduleRoute: route,
+                },
+            });
+        }
+        else {
+            const anime = await prisma.anime.findFirst({
+                where: {
+                    guildId: reaction.message.guild.id,
+                    animeId: animeId,
+                },
+            });
+
+            if (anime == null) return;
+
+            await prisma.anime.delete({
+                where: {
+                    id: anime.id,
+                },
+            });
+        }
+    }
+}
+
 module.exports = {
     init,
     notify,
+    react,
 };
