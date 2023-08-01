@@ -56,7 +56,7 @@ async function notify(client) {
 
         // filter out the animes which are airing on a different day
         animeSchedules = animeSchedules.filter(anime => {
-            return moment(anime.episodeDate).day() == moment().day() && anime.airingStatus == 'aired';
+            return moment(anime.episodeDate).day() == moment().day() && anime.airingStatus !== 'delayed-air';
         });
 
         if (animeSchedules.length === 0) return;
