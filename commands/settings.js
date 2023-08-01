@@ -175,7 +175,6 @@ async function animenotifySettingsHandler(setting, interaction) {
                         anischeduleRoute: route,
                     },
                 });
-                channel.send(`The anime with the id ${id} has been added to the list!`);
             }
             break;
         }
@@ -207,7 +206,6 @@ async function animenotifySettingsHandler(setting, interaction) {
                         id: anime.id,
                     },
                 });
-                channel.send(`Anime with the id ${id} has been removed from the list!`);
             }
             break;
         }
