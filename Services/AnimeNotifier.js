@@ -62,10 +62,13 @@ async function notify(client, dayOfTheWeek) {
             return moment(anime.episodeDate).day() == dayOfTheWeek && anime.airingStatus !== 'delayed-air';
         });
 
-        if (animeSchedules.length === 0) return;
-
         // fetch the channel where we want to send the notifications
         const aniNotifChannel = await client.channels.fetch(guild.aniNotifChannelId);
+
+        if (animeSchedules.length === 0) {
+            aniNotifChannel.send(`No relevant anime airing today (${moment().day(dayOfTheWeek).format('dddd')})`);
+            return;
+        }
 
         aniNotifChannel.send(`Anime airing today (${moment().day(dayOfTheWeek).format('dddd')})`);
 
