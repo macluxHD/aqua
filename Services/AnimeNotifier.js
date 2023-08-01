@@ -66,11 +66,11 @@ async function notify(client, dayOfTheWeek) {
         const aniNotifChannel = await client.channels.fetch(guild.aniNotifChannelId);
 
         if (animeSchedules.length === 0) {
-            aniNotifChannel.send(`No relevant anime airing today (${moment().day(dayOfTheWeek).format('dddd')})`);
+            aniNotifChannel.send(`No relevant anime airing on ${moment().day(dayOfTheWeek).format('dddd')}`);
             return;
         }
 
-        aniNotifChannel.send(`Anime airing today (${moment().day(dayOfTheWeek).format('dddd')})`);
+        aniNotifChannel.send(`Anime airing on ${moment().day(dayOfTheWeek).format('dddd')}`);
 
         // send the notifications
         for (const anime of animeSchedules) {
