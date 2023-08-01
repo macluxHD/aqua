@@ -136,60 +136,79 @@ async function animenotifySettingsHandler(setting, interaction) {
         }
         // add an anime from the list
         case 'add': {
-            // check if there is already an anime with the same id
-            const anime = await prisma.anime.findFirst({
-                where: {
-                    guildId: interaction.guild.id,
-                    animeId: setting.get('animeid').value,
-                },
-            });
+            const ids = setting.get('animeid').value.split(',');
 
-            if (anime !== null) {
-                interaction.reply('This anime is already being watched!');
-                return;
-            }
+            interaction.reply(`Adding ${ids.length} animes to the list...`);
 
-            const route = await superagent.get('https://animeschedule.net/api/v3/anime')
-                .query({ 'anilist-ids': setting.get('animeid').value })
-                .then(res => {
-                    return res.body.anime[0].route;
-                })
-                .catch(() => {
-                    interaction.reply('Error while fetching anime using id, may not exist!');
-                    return;
+            const channel = interaction.guild.channels.cache.get(interaction.channelId);
+
+            for (const id of ids) {
+                // check if there is already an anime with the same id
+                const anime = await prisma.anime.findFirst({
+                    where: {
+                        guildId: interaction.guild.id,
+                        animeId: id,
+                    },
                 });
 
-            await prisma.anime.create({
-                data: {
-                    guildId: interaction.guild.id,
-                    animeId: setting.get('animeid').value,
-                    anischeduleRoute: route,
-                },
-            });
-            interaction.reply('Anime has been added to the list!');
+                if (anime !== null) {
+                    channel.send(`The anime with the id ${id} is already being watched!`);
+                    continue;
+                }
+
+                const route = await superagent.get('https://animeschedule.net/api/v3/anime')
+                    .query({ 'anilist-ids': id })
+                    .then(res => {
+                        return res.body.anime[0].route;
+                    })
+                    .catch(() => {
+                        channel.send(`Error while fetching anime with id ${id}, may not exist!`);
+                        return false;
+                    });
+
+                if (!route) continue;
+
+                await prisma.anime.create({
+                    data: {
+                        guildId: interaction.guild.id,
+                        animeId: id,
+                        anischeduleRoute: route,
+                    },
+                });
+                channel.send(`The anime with the id ${id} has been added to the list!`);
+            }
             break;
         }
         // remove an anime from the list
         case 'remove': {
-            // check if there is already an anime with the same id
-            const anime = await prisma.anime.findFirst({
-                where: {
-                    guildId: interaction.guild.id,
-                    animeId: setting.get('animeid').value,
-                },
-            });
+            const ids = setting.get('animeid').value.split(',');
 
-            if (!anime) {
-                interaction.reply('This anime is not in the list, there is nothing to be removed here!');
-                return;
+            interaction.reply(`Removing ${ids.length} animes from the list...`);
+
+            const channel = interaction.guild.channels.cache.get(interaction.channelId);
+
+            for (const id of ids) {
+
+                // check if there is already an anime with the same id
+                const anime = await prisma.anime.findFirst({
+                    where: {
+                        guildId: interaction.guild.id,
+                        animeId: id,
+                    },
+                });
+
+                if (!anime) {
+                    channel.send(`The anime with the id ${id} is not in the list, there is nothing to be removed here!`);
+                    continue;
+                }
+
+                await prisma.anime.delete({
+                    where: {
+                        id: anime.id,
+                    },
+                });
+                channel.send(`Anime with the id ${id} has been removed from the list!`);
             }
-
-            await prisma.anime.delete({
-                where: {
-                    id: anime.id,
-                },
-            });
-            interaction.reply('Anime has been removed from the list!');
             break;
         }
     }
