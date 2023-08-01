@@ -12,7 +12,10 @@ function init(client) {
     cron.schedule('0 9 * * * ', () => notify(client));
 }
 
-async function notify(client) {
+async function notify(client, dayOfTheWeek) {
+    if (typeof (dayOfTheWeek) == 'undefined') {
+        dayOfTheWeek = moment().day();
+    }
 
     const guilds = await prisma.Guild.findMany();
 
@@ -56,7 +59,7 @@ async function notify(client) {
 
         // filter out the animes which are airing on a different day
         animeSchedules = animeSchedules.filter(anime => {
-            return moment(anime.episodeDate).day() == moment().day() && anime.airingStatus !== 'delayed-air';
+            return moment(anime.episodeDate).day() == dayOfTheWeek && anime.airingStatus !== 'delayed-air';
         });
 
         if (animeSchedules.length === 0) return;
@@ -64,7 +67,7 @@ async function notify(client) {
         // fetch the channel where we want to send the notifications
         const aniNotifChannel = await client.channels.fetch(guild.aniNotifChannelId);
 
-        aniNotifChannel.send(`Anime airing today (${moment().format('dddd')})`);
+        aniNotifChannel.send(`Anime airing today (${moment().day(dayOfTheWeek).format('dddd')})`);
 
         // send the notifications
         for (const anime of animeSchedules) {
@@ -86,4 +89,5 @@ async function notify(client) {
 
 module.exports = {
     init,
+    notify,
 };
