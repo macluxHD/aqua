@@ -94,7 +94,11 @@ async function notify(client, dayOfTheWeek) {
 // Handles reactions on the anime notifications
 async function react(reaction) {
     if (reaction.emoji.name === '❌') {
-        const animeId = reaction.message.embeds[0].data.url.match(/\/anime\/(\d+)\//)[1];
+        const animeId = reaction.message.embeds[0].data.url?.match(/\/anime\/(\d+)/)[1];
+
+        if (typeof (animeId) == 'undefined') {
+            reaction.message.channel.send('Error while fetching anime id!');
+        }
         reaction.message.channel.send(`Removing anime with id ${animeId} from the list...`);
 
         const guild = await prisma.guild.findUnique({ where: { id: reaction.message.guild.id } });
