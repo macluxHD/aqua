@@ -28,6 +28,16 @@
         { "name": "cron", "required": true, "rowname": "aniNotifSchedule" }
       ]
     },
+    "aninotifisblacklist": {
+      "description": "Wheter to show all anime airing today except those in the blacklist or only show those on the list",
+      "options": [
+        {
+          "name": "isblacklist",
+          "required": true,
+          "rowname": "aniNotifisBlacklist"
+        }
+      ]
+    },
     "animenotify": {
       "subcommands": {
         "add": {
@@ -65,6 +75,10 @@
     "cron": {
       "description": "Cron schedule",
       "type": "string"
+    },
+    "isblacklist": {
+      "description": "True for blacklist, false for whitelist",
+      "type": "boolean"
     }
   }
 }
