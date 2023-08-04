@@ -1,14 +1,84 @@
 {
-  "retainQueue": {
-    "description": "If the queue should be cleared or not when everyone leaves the voice channel",
-    "type": "boolean"
+  "settings": {
+    "retainqueue": {
+      "description": "If the queue should be cleared or not when everyone leaves the voice channel",
+      "options": [
+        { "name": "retain", "required": true, "rowname": "retainQueue" }
+      ]
+    },
+    "prefix": {
+      "description": "The prefix for the normal chat commands",
+      "options": [{ "name": "prefix", "required": true, "rowname": "prefix" }]
+    },
+    "musicchannel": {
+      "description": "The channel where the music commands should be used",
+      "options": [
+        { "name": "channel", "required": true, "rowname": "musicChannelId" }
+      ]
+    },
+    "animenotifychannel": {
+      "description": "The channel where the anime notifications should be sent",
+      "options": [
+        { "name": "channel", "required": true, "rowname": "aniNotifChannelId" }
+      ]
+    },
+    "animenotifyschedule": {
+      "description": "The schedule for the anime notifications",
+      "options": [
+        { "name": "cron", "required": true, "rowname": "aniNotifSchedule" }
+      ]
+    },
+    "aninotifisblacklist": {
+      "description": "Wheter to show all anime airing today except those in the blacklist or only show those on the list",
+      "options": [
+        {
+          "name": "isblacklist",
+          "required": true,
+          "rowname": "aniNotifisBlacklist"
+        }
+      ]
+    },
+    "animenotify": {
+      "subcommands": {
+        "add": {
+          "description": "Add a new anime to the list",
+          "options": [{ "name": "animeid", "required": true }]
+        },
+        "remove": {
+          "description": "Remove an anime from the list",
+          "options": [{ "name": "animeid", "required": true }]
+        },
+        "list": {
+          "description": "List all the anime in the list"
+        }
+      },
+      "description": "Add, remove or list anime to be notified when they are released"
+    }
   },
-  "prefix": {
-    "description": "The prefix for the normal chat commands",
-    "type": "string"
-  },
-  "musicChannel": {
-    "description": "The channel where the music commands should be used",
-    "type": "channel"
+  "options": {
+    "retain": {
+      "description": "Wheter or not to retain the queue",
+      "type": "boolean"
+    },
+    "prefix": {
+      "description": "The prefix to set",
+      "type": "string"
+    },
+    "channel": {
+      "description": "The channel to set",
+      "type": "channel"
+    },
+    "animeid": {
+      "description": "The id of the anime",
+      "type": "string"
+    },
+    "cron": {
+      "description": "Cron schedule",
+      "type": "string"
+    },
+    "isblacklist": {
+      "description": "True for blacklist, false for whitelist",
+      "type": "boolean"
+    }
   }
 }
