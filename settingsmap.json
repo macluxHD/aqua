@@ -22,6 +22,12 @@
         { "name": "channel", "required": true, "rowname": "aniNotifChannelId" }
       ]
     },
+    "animenotifyschedule": {
+      "description": "The schedule for the anime notifications",
+      "options": [
+        { "name": "cron", "required": true, "rowname": "aniNotifSchedule" }
+      ]
+    },
     "animenotify": {
       "subcommands": {
         "add": {
@@ -54,6 +60,10 @@
     },
     "animeid": {
       "description": "The id of the anime",
+      "type": "string"
+    },
+    "cron": {
+      "description": "Cron schedule",
       "type": "string"
     }
   }

@@ -1,4 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const moment = require('moment');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 // helper functions
 const aniNotif = require('../Services/AnimeNotifier');
@@ -12,8 +15,9 @@ module.exports = {
         .addStringOption(option =>
             option.setName('day')
                 .setDescription('Day of the week')
-                .setRequired(true)
+                .setRequired(false)
                 .addChoices(
+                    { name: 'Today', value: 'undefined' },
                     { name: 'Sunday', value: '0' },
                     { name: 'Monday', value: '1' },
                     { name: 'Tuesday', value: '2' },
@@ -25,13 +29,19 @@ module.exports = {
     async execute(client, interaction, message, args) {
         reply(interaction, message?.channel, 'Notifying...');
 
-        const day = !interaction ? args[1] : interaction.options.get('day').value;
+        let day = !interaction ? args[1] : interaction.options.get('day')?.value;
 
-        if (day < 0 || day > 6 || isNaN(day)) {
+        if (isNaN(day)) {
+            day = moment().day();
+        }
+        else if (day < 0 || day > 6) {
             reply(interaction, message?.channel, 'Invalid day!');
             return;
         }
 
-        aniNotif.notify(client, day);
+        const guildId = !interaction ? message?.guild.id : interaction.guildId;
+        const guild = await prisma.guild.findUnique({ where: { id: guildId } });
+
+        aniNotif.notify(client, day, guild);
     },
 };

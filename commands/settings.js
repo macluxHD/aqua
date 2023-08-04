@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('@discordjs/builders');
 const settingsmap = require('../settingsmap.json');
+const cron = require('node-cron');
 
 // helper functions
 const reply = require('../utils/reply');
@@ -214,6 +215,14 @@ async function animenotifySettingsHandler(setting, interaction) {
 
 async function guildSettingsHandler(setting, interaction) {
     const option = settingsmap.settings[setting.getSubcommand()].options[0];
+
+    if (option.name === 'cron') {
+        const isValid = cron.validate(setting.get(option.name).value);
+        if (!isValid) {
+            interaction.reply('Invalid cron expression!');
+            return;
+        }
+    }
 
     await prisma.guild.update({
         where: {
