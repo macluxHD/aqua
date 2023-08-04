@@ -30,7 +30,6 @@
         },
         "remove": {
           "description": "Remove an anime from the list",
-          "type": "string",
           "options": [{ "name": "animeid", "required": true }]
         },
         "list": {
