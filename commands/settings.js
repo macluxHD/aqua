@@ -127,10 +127,10 @@ async function animenotifySettingsHandler(setting, interaction) {
                 return;
             }
 
-            // TODO: actually fetch the names of the animes using the anilist api
+            // TODO: actually fetch the names of the animes using an api or map
             const embed = new EmbedBuilder()
                 .setTitle('Anime on the ' + (guild.aniNotifisBlacklist ? 'blacklist' : 'watchlist'))
-                .setDescription(anime.map(a => `${a.animeId}`).join('\n'));
+                .setDescription(anime.map(a => `[AniList](https://anilist.co/anime/${a.animeId}/) (${a.animeId})`).join('\n'));
 
             interaction.reply({ embeds: [embed] });
             break;
