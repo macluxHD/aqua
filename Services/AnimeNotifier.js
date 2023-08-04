@@ -31,7 +31,7 @@ async function notify(client, dayOfTheWeek, guild) {
 
     // Fetch the anime airing currently
     // TODO: Potentially allow for dubs and raw to be fetched as well
-    let animeSchedules = await superagent.get('https://animeschedule.net/api/v3/timetables/sub')
+    const animeSchedules = await superagent.get('https://animeschedule.net/api/v3/timetables/sub')
         .query({ 'week': moment().week() })
         .query({ 'year': new Date().getFullYear() })
         .query({ 'tz': 'UTC' })
@@ -44,29 +44,29 @@ async function notify(client, dayOfTheWeek, guild) {
         });
 
     // filter out the animes which we want to display based on the settings of the guild
+    let filteredAnimeSchedules = animeSchedules;
     if (guild.aniNotifisBlacklist && animes.length !== 0) {
-        animeSchedules = animeSchedules.filter(anime => {
+        filteredAnimeSchedules = animeSchedules.filter(anime => {
             return animes.find(a => a.anischeduleRoute == anime.route) === undefined;
         });
     }
     else if (!guild.aniNotifisBlacklist) {
         if (animes.length === 0) return;
 
-        animeSchedules = animeSchedules.filter(anime => {
+        filteredAnimeSchedules = animeSchedules.filter(anime => {
             return animes.find(a => a.anischeduleRoute == anime.route) !== undefined;
         });
     }
 
-
     // filter out the animes which are airing on a different day
-    animeSchedules = animeSchedules.filter(anime => {
+    filteredAnimeSchedules = filteredAnimeSchedules.filter(anime => {
         return moment(anime.episodeDate).day() == dayOfTheWeek && anime.airingStatus !== 'delayed-air';
     });
 
     // fetch the channel where we want to send the notifications
     const aniNotifChannel = await client.channels.fetch(guild.aniNotifChannelId);
 
-    if (animeSchedules.length === 0) {
+    if (filteredAnimeSchedules.length === 0) {
         aniNotifChannel.send(`No relevant anime airing on ${moment().day(dayOfTheWeek).format('dddd')}`);
         return;
     }
@@ -74,9 +74,11 @@ async function notify(client, dayOfTheWeek, guild) {
     aniNotifChannel.send(`Anime airing on ${moment().day(dayOfTheWeek).format('dddd')}`);
 
     // send the notifications
-    for (const anime of animeSchedules) {
+    for (const anime of filteredAnimeSchedules) {
         // Gather more info about the anime
         const moreInfo = (await superagent.get('https://animeschedule.net/api/v3/anime/' + anime.route).set('Authorization', 'Bearer ' + process.env.ANIME_SCHEDULE_API_KEY)).body;
+
+        const animeId = moreInfo.websites.aniList.match(/\/anime\/(\d+)/)[1];
 
         const embed = new EmbedBuilder()
             .setTitle(anime.title)
@@ -86,8 +88,64 @@ async function notify(client, dayOfTheWeek, guild) {
                 { name: 'Air time', value: `<t:${moment.utc(anime.episodeDate).unix()}:R>` },
             )
             .setFooter({ text: 'Powered by animeschedule.net' })
+            .setAuthor({ name: animeId })
             .setColor('#00b0f4');
         await aniNotifChannel.send({ embeds: [embed] });
+    }
+
+    // Cleanup the database if the anime is no longer airing
+    const animeRoutes = animeSchedules.map(a => a.route);
+    if (guild.aniNotifisBlacklist) {
+        // delete all anime which are on the blacklist but not in animeRoutes and delete them
+        await prisma.Anime.deleteMany({
+            where: {
+                guildId: guild.id,
+                NOT: {
+                    anischeduleRoute: {
+                        in: animeRoutes,
+                    },
+                },
+            },
+        });
+    }
+    // delete every anime on the whitelist which has aired in the past and is finished airing
+    else {
+        // fetch every anime in the db using the animeschudle api
+        const premiers = [];
+
+        for (const anime of animes) {
+            await superagent.get('https://animeschedule.net/api/v3/anime/' + anime.anischeduleRoute)
+                .set('Authorization', 'Bearer ' + process.env.ANIME_SCHEDULE_API_KEY)
+                .then(res => {
+                    premiers.push({ route: res.body.route, premier: res.body.premier });
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
+
+        // only keep the animes which are airing in the future
+        const futurePremiers = premiers.filter(p => {
+            console.log(p);
+            return moment.utc(p.premier).isAfter(moment()) || p.premier === '0001-01-01T00:00:00Z';
+        });
+
+        // add future premiers into filteredAnimeRoutes
+        futurePremiers.forEach(p => {
+            animeRoutes.push(p.route);
+        });
+
+        // delete all anime which are on the whitelist but which are not airing anymore
+        await prisma.Anime.deleteMany({
+            where: {
+                guildId: guild.id,
+                NOT: {
+                    anischeduleRoute: {
+                        in: animeRoutes,
+                    },
+                },
+            },
+        });
     }
 }
 
