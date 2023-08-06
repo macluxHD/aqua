@@ -158,11 +158,11 @@ async function react(reaction) {
         if (typeof (animeId) == 'undefined') {
             reaction.message.channel.send('Error while fetching anime id!');
         }
-        reaction.message.channel.send(`Removing anime with id ${animeId} from the list...`);
 
         const guild = await prisma.guild.findUnique({ where: { id: reaction.message.guild.id } });
 
         if (guild.aniNotifisBlacklist) {
+            reaction.message.channel.send(`Adding anime with id ${animeId} to the blacklist...`);
             // check if anime is already on the list
             const anime = await prisma.anime.findFirst({
                 where: {
@@ -194,6 +194,7 @@ async function react(reaction) {
             });
         }
         else {
+            reaction.message.channel.send(`Removing anime with id ${animeId} from the whitelist...`);
             const anime = await prisma.anime.findFirst({
                 where: {
                     guildId: reaction.message.guild.id,
