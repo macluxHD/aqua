@@ -22,22 +22,6 @@
         { "name": "channel", "required": true, "rowname": "aniNotifChannelId" }
       ]
     },
-    "animenotifyschedule": {
-      "description": "The schedule for the anime notifications",
-      "options": [
-        { "name": "cron", "required": true, "rowname": "aniNotifSchedule" }
-      ]
-    },
-    "aninotifisblacklist": {
-      "description": "Wheter to show all anime airing today except those in the blacklist or only show those on the list",
-      "options": [
-        {
-          "name": "isblacklist",
-          "required": true,
-          "rowname": "aniNotifisBlacklist"
-        }
-      ]
-    },
     "animenotify": {
       "subcommands": {
         "add": {
@@ -50,6 +34,22 @@
         },
         "list": {
           "description": "List all the anime in the list"
+        },
+        "isblacklist": {
+          "description": "Wheter to show all anime airing today except those in the blacklist or only show those on the list",
+          "options": [
+            {
+              "name": "isblacklist",
+              "required": true,
+              "rowname": "aniNotifisBlacklist"
+            }
+          ]
+        },
+        "setschedule": {
+          "description": "The schedule for the anime notifications",
+          "options": [
+            { "name": "cron", "required": true, "rowname": "aniNotifSchedule" }
+          ]
         }
       },
       "description": "Add, remove or list anime to be notified when they are released"

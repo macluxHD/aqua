@@ -10,6 +10,8 @@ const prisma = new PrismaClient();
 
 const superagent = require('superagent');
 
+const animenotify = require('../Services/AnimeNotifier');
+
 // Create the command
 const command = new SlashCommandBuilder()
     .setName('settings')
@@ -95,18 +97,26 @@ module.exports = {
         switch (setting.getSubcommandGroup()) {
             // settings related to the animenotify feature
             case 'animenotify':
-                animenotifySettingsHandler(setting, interaction);
+                animenotifySettingsHandler(client, setting, interaction);
                 break;
 
             // normal setting related to the guild
-            default:
-                guildSettingsHandler(setting, interaction);
+            default: {
+                guildSettingsHandler(setting, getOption(setting), interaction);
                 break;
+            }
         }
     },
 };
 
-async function animenotifySettingsHandler(setting, interaction) {
+function getOption(setting) {
+    if (setting.getSubcommandGroup() === null) {
+        return settingsmap.settings[setting.getSubcommand()].options[0];
+    }
+    return settingsmap.settings[setting.getSubcommandGroup()].subcommands[setting.getSubcommand()].options[0];
+}
+
+async function animenotifySettingsHandler(client, setting, interaction) {
     switch (setting.getSubcommand()) {
         // list all anime on the list
         case 'list': {
@@ -209,12 +219,20 @@ async function animenotifySettingsHandler(setting, interaction) {
             }
             break;
         }
+        // Restart the cron job after changing the schedule for it to apply
+        case 'setschedule': {
+            await guildSettingsHandler(setting, getOption(setting), interaction);
+            animenotify.restartCronJob(client, interaction.guild.id);
+            break;
+        }
+        default: {
+            guildSettingsHandler(setting, getOption(setting), interaction);
+            break;
+        }
     }
 }
 
-async function guildSettingsHandler(setting, interaction) {
-    const option = settingsmap.settings[setting.getSubcommand()].options[0];
-
+async function guildSettingsHandler(setting, option, interaction) {
     if (option.name === 'cron') {
         const isValid = cron.validate(setting.get(option.name).value);
         if (!isValid) {

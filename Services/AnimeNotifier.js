@@ -7,11 +7,13 @@ const cron = require('node-cron');
 
 const superagent = require('superagent');
 
+const cronJobs = {};
+
 async function init(client) {
     const guilds = await prisma.Guild.findMany();
 
     guilds.forEach(async guild => {
-        cron.schedule(guild.aniNotifSchedule, () => notify(client, null, guild));
+        cronJobs[guild.id] = cron.schedule(guild.aniNotifSchedule, () => notify(client, null, guild));
     });
 }
 
@@ -213,8 +215,19 @@ async function react(client, reaction) {
     }
 }
 
+// Restarts the cron job for the guild
+async function restartCronJob(client, guildId) {
+    const guild = await prisma.guild.findUnique({ where: { id: guildId } });
+
+    if (typeof (guild) === 'undefined') return;
+
+    cronJobs[guildId].stop();
+    cronJobs[guildId] = cron.schedule(guild.aniNotifSchedule, () => notify(client, null, guild));
+}
+
 module.exports = {
     init,
     notify,
     react,
+    restartCronJob,
 };
