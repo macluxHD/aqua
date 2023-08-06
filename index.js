@@ -161,7 +161,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
     // Check if the reaction is on a aniNotify Embed
     if (reaction.message.embeds[0].data.footer.text == 'Powered by animeschedule.net') {
-        animeNotifier.react(reaction);
+        animeNotifier.react(client, reaction);
     }
 });
 

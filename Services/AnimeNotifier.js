@@ -151,8 +151,8 @@ async function notify(client, dayOfTheWeek, guild) {
 }
 
 // Handles reactions on the anime notifications
-async function react(reaction) {
-    if (reaction.emoji.name === '❌') {
+async function react(client, reaction) {
+    if (reaction.emoji.name === '❌' && reaction.message.author.id === client.user.id) {
         const animeId = reaction.message.embeds[0].data.url?.match(/\/anime\/(\d+)/)[1];
 
         if (typeof (animeId) == 'undefined') {
