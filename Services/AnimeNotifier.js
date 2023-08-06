@@ -3,17 +3,15 @@ const prisma = new PrismaClient();
 const moment = require('moment');
 const { EmbedBuilder } = require('discord.js');
 
-const cron = require('node-cron');
+const { Cron, scheduledJobs } = require('croner');
 
 const superagent = require('superagent');
-
-const cronJobs = {};
 
 async function init(client) {
     const guilds = await prisma.Guild.findMany();
 
     guilds.forEach(async guild => {
-        cronJobs[guild.id] = cron.schedule(guild.aniNotifSchedule, () => notify(client, null, guild));
+        Cron(guild.aniNotifSchedule, { name: guild.id }, () => notify(client, null, guild));
     });
 }
 
@@ -221,8 +219,8 @@ async function restartCronJob(client, guildId) {
 
     if (typeof (guild) === 'undefined') return;
 
-    cronJobs[guildId].stop();
-    cronJobs[guildId] = cron.schedule(guild.aniNotifSchedule, () => notify(client, null, guild));
+    scheduledJobs.find(j => j.name === guildId).stop();
+    Cron(guild.aniNotifSchedule, { name: guild.id }, () => notify(client, null, guild));
 }
 
 module.exports = {

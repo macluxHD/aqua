@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('@discordjs/builders');
 const settingsmap = require('../settingsmap.json');
-const cron = require('node-cron');
+const { Cron } = require('croner');
 
 // helper functions
 const reply = require('../utils/reply');
@@ -234,8 +234,10 @@ async function animenotifySettingsHandler(client, setting, interaction) {
 
 async function guildSettingsHandler(setting, option, interaction) {
     if (option.name === 'cron') {
-        const isValid = cron.validate(setting.get(option.name).value);
-        if (!isValid) {
+        try {
+            Cron(setting.get(option.name).value);
+        }
+        catch (error) {
             interaction.reply('Invalid cron expression!');
             return;
         }
