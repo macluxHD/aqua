@@ -80,13 +80,19 @@ async function notify(client, dayOfTheWeek, guild) {
         const moreInfo = (await superagent.get('https://animeschedule.net/api/v3/anime/' + anime.route).set('Authorization', 'Bearer ' + process.env.ANIME_SCHEDULE_API_KEY)).body;
 
         const animeId = moreInfo.websites.aniList.match(/\/anime\/(\d+)/)[1];
+        let airtime = moment.utc(anime.episodeDate);
+
+        // Fix for animes which air on sunday
+        if (dayOfTheWeek === 0) {
+            airtime = airtime.subtract(7, 'days');
+        }
 
         const embed = new EmbedBuilder()
             .setTitle(anime.title)
             .setURL('https://' + moreInfo.websites.aniList)
             .setThumbnail('https://img.animeschedule.net/production/assets/public/img/' + anime.imageVersionRoute)
             .addFields(
-                { name: 'Air time', value: `<t:${moment.utc(anime.episodeDate).unix()}:R>` },
+                { name: 'Air time', value: `<t:${airtime.unix()}:R>` },
             )
             .setFooter({ text: 'Powered by animeschedule.net' })
             .setAuthor({ name: animeId })
