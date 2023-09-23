@@ -32,7 +32,7 @@ async function notify(client, dayOfTheWeek, guild) {
     // Fetch the anime airing currently
     // TODO: Potentially allow for dubs and raw to be fetched as well
     const animeSchedules = await superagent.get('https://animeschedule.net/api/v3/timetables/sub')
-        .query({ 'week': moment().week() })
+        .query({ 'week': moment().day() == 0 ? moment().week() - 1 : moment().week() })
         .query({ 'year': new Date().getFullYear() })
         .query({ 'tz': 'UTC' })
         .set('Authorization', 'Bearer ' + process.env.ANIME_SCHEDULE_API_KEY)
