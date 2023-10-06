@@ -82,11 +82,14 @@ async function notify(client, dayOfTheWeek, guild) {
         const animeId = moreInfo.websites.aniList.match(/\/anime\/(\d+)/)[1];
         const airtime = moment.utc(anime.episodeDate);
 
+        const episodeString = typeof (anime.episodes) !== 'undefined' ? anime.episodeNumber.toString() + '/' + anime.episodes.toString() : anime.episodeNumber.toString();
+
         const embed = new EmbedBuilder()
             .setTitle(anime.title)
             .setURL('https://' + moreInfo.websites.aniList)
             .setThumbnail('https://img.animeschedule.net/production/assets/public/img/' + anime.imageVersionRoute)
             .addFields(
+                { name: 'Episode', value: episodeString },
                 { name: 'Air time', value: `<t:${airtime.unix()}:R>` },
             )
             .setFooter({ text: 'Powered by animeschedule.net' })
