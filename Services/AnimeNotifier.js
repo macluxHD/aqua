@@ -79,22 +79,26 @@ async function notify(client, dayOfTheWeek, guild) {
         // Gather more info about the anime
         const moreInfo = (await superagent.get('https://animeschedule.net/api/v3/anime/' + anime.route).set('Authorization', 'Bearer ' + process.env.ANIME_SCHEDULE_API_KEY)).body;
 
-        const animeId = moreInfo.websites.aniList.match(/\/anime\/(\d+)/)[1];
+        const animeId = moreInfo.websites?.aniList?.match(/\/anime\/(\d+)/)[1];
         const airtime = moment.utc(anime.episodeDate);
 
         const episodeString = typeof (anime.episodes) !== 'undefined' ? anime.episodeNumber.toString() + '/' + anime.episodes.toString() : anime.episodeNumber.toString();
 
         const embed = new EmbedBuilder()
             .setTitle(anime.title)
-            .setURL('https://' + moreInfo.websites.aniList)
             .setThumbnail('https://img.animeschedule.net/production/assets/public/img/' + anime.imageVersionRoute)
             .addFields(
                 { name: 'Episode', value: episodeString },
                 { name: 'Air time', value: `<t:${airtime.unix()}:R>` },
             )
             .setFooter({ text: 'Powered by animeschedule.net' })
-            .setAuthor({ name: animeId })
             .setColor('#00b0f4');
+
+        if (animeId) {
+            embed.setURL('https://' + moreInfo.websites.aniList)
+            embed.setAuthor({ name: animeId })
+        }
+
         await aniNotifChannel.send({ embeds: [embed] });
     }
 
