@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { createAudioPlayer, createAudioResource, joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
+const { createAudioPlayer, createAudioResource, joinVoiceChannel, getVoiceConnection, demuxProbe } = require('@discordjs/voice');
 const superagent = require('superagent');
 const ytdl = require('@distube/ytdl-core');
 
@@ -218,12 +218,10 @@ const playSong = async (player, guild) => {
     if (queue[0]) {
         const videoId = queue[0].videoId;
         try {
-            const stream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, { filter: 'audioonly' });
+            const { stream, type } = await demuxProbe(ytdl(`https://www.youtube.com/watch?v=${videoId}`, { filter: 'audioonly', dlChunkSize: 0 }));
+            const resource = createAudioResource(stream, { inputType: type });
 
-            const resource = createAudioResource(stream, {inlineVolume: true});
-            resource.volume.setVolume(0.3);
-
-            player.play(resource);
+            player.play(resource, {highWaterMark: 50});
         }
         catch (error) {
             console.log('Error while playing song:', error);
