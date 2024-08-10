@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { createAudioPlayer, createAudioResource, joinVoiceChannel, getVoiceConnection } = require('@discordjs/voice');
 const superagent = require('superagent');
-const play = require('play-dl');
+const ytdl = require('@distube/ytdl-core');
 
 // helper functions
 const reply = require('../utils/reply');
@@ -218,20 +218,20 @@ const playSong = async (player, guild) => {
     if (queue[0]) {
         const videoId = queue[0].videoId;
         try {
-            const { stream } = await play.stream('https://www.youtube.com/watch?v=' + videoId, { discordPlayerCompatibility: true });
-            const resource = createAudioResource(stream, { inlineVolume: true });
+            const stream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, { filter: 'audioonly' });
+
+            const resource = createAudioResource(stream, {inlineVolume: true});
             resource.volume.setVolume(0.3);
 
             player.play(resource);
         }
         catch (error) {
-            console.log('error while playing song');
-            console.error(error);
+            console.log('Error while playing song:', error);
             await prisma.queue.delete({ where: { id: queue[0].id } });
             playSong(player, guild);
         }
     }
-};
+}
 
 const parseSnippet = (snippet, videoId, channelThumbnail) => {
     return {
